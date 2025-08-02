@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Stock Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair@2.0.0/dist/chartjs-plugin-crosshair.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom style for selected stock */
+        .stock-item.selected {
+            background-color: #e0f2fe; /* sky-100 */
+            border-color: #0c4a6e; /* sky-800 */
+        }
+        /* Tab styles for segmented control */
+        .tab-btn, .range-btn, .price-btn {
+            color: #374151; /* gray-700 */
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+        .tab-btn:hover, .range-btn:hover, .price-btn:hover {
+            background-color: #e5e7eb; /* gray-200 */
+        }
+        .tab-btn.active, .range-btn.active, .price-btn.active {
+            background-color: #ffffff;
+            color: #1f2937; /* gray-800 */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="mb-8 w-full">
+            <div class="flex flex-col sm:flex-row justify-between items-center w-full bg-white p-6 rounded-lg shadow-md">
+                <div class="flex flex-col sm:flex-row items-center">
+                    <h1 class="text-4xl font-bold text-gray-900">Portfolio Tracker</h1>
+                    <div class="bg-gray-100 rounded-lg p-1 flex space-x-1 sm:ml-5 mt-4 sm:mt-0">
+                        <button data-price="normal" class="price-btn rounded-md py-2 px-4 text-sm font-medium">Normal Prices</button>
+                        <button data-price="adjusted" class="price-btn rounded-md py-2 px-4 text-sm font-medium">Adjusted Prices</button>
+                    </div>
+                </div>
+                <div class="relative mt-4 sm:mt-0">
+                    <button id="settings-button" class="p-2 rounded-md hover:bg-gray-200">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
+                    <div id="settings-dropdown" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl p-6 z-10 hidden">
+                        <h3 class="text-lg font-semibold mb-4">Settings</h3>
+                        <!-- API Key Management -->
+                        <div class="mb-6">
+                            <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-1">Tiingo API Key</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="text" id="apiKeyInput" placeholder="Enter your API Key" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-800 focus:border-sky-800 sm:text-sm text-gray-900">
+                                <button id="saveApiKeyBtn" class="bg-sky-800 text-white font-semibold py-2 px-3 rounded-md hover:bg-sky-900">Save</button>
+                            </div>
+                            <p id="api-key-error" class="text-red-600 text-sm mt-1"></p>
+                        </div>
+                        <!-- Data Management -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Manage Portfolio Data</label>
+                            <div class="flex items-center space-x-2">
+                                <button id="downloadBtn" title="Download Portfolio" class="w-full flex justify-center items-center bg-gray-700 text-white py-2 px-4 rounded-md hover:bg-gray-800 font-semibold">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                </button>
+                                <button id="uploadBtn" title="Upload Portfolio" class="w-full flex justify-center items-center bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 font-semibold">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                </button>
+                                <input type="file" id="fileUpload" class="hidden" accept=".json,text/plain">
+                            </div>
+                            <p id="upload-error" class="text-red-500 text-sm mt-2"></p>
+                        </div>
+                        <!-- Force Refresh Button -->
+                        <div class="mt-6">
+                            <button id="forceRefreshBtn" class="w-full flex justify-center items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 font-semibold">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                    <path fill="currentColor" stroke="currentColor" d="M12.077 19q-2.931 0-4.966-2.033q-2.034-2.034-2.034-4.964t2.034-4.966T12.077 5q1.783 0 3.339.847q1.555.847 2.507 2.365V5.5q0-.213.144-.356T18.424 5t.356.144t.143.356v3.923q0 .343-.232.576t-.576.232h-3.923q-.212 0-.356-.144t-.144-.357t.144-.356t.356-.143h3.2q-.78-1.496-2.197-2.364Q13.78 6 12.077 6q-2.5 0-4.25 1.75T6.077 12t1.75 4.25t4.25 1.75q1.787 0 3.271-.968q1.485-.969 2.202-2.573q.085-.196.274-.275q.19-.08.388-.013q.211.067.28.275t-.015.404q-.833 1.885-2.56 3.017T12.077 19" />
+                                </svg>
+                                 <span class="ml-2">Force Refresh All</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Left Column: Input and Portfolio List -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold mb-4">Add a New Stock</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="ticker" class="block text-sm font-medium text-gray-700">Ticker Symbol</label>
+                            <input type="text" id="ticker" placeholder="e.g., AAPL, GOOG" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-800 focus:border-sky-800 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="shares" class="block text-sm font-medium text-gray-700">Number of Shares</label>
+                            <input type="number" id="shares" placeholder="e.g., 10" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-800 focus:border-sky-800 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="purchaseDate" class="block text-sm font-medium text-gray-700">Purchase Date</label>
+                            <input type="date" id="purchaseDate" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-800 focus:border-sky-800 sm:text-sm">
+                        </div>
+                    </div>
+                    <button id="addStockBtn" class="mt-6 w-full bg-sky-800 text-white py-2 px-4 rounded-md hover:bg-sky-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 font-semibold flex items-center justify-center">
+                        <span id="addStockBtnText">Add Stock</span>
+                        <div id="addStockLoader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 ml-3 hidden"></div>
+                    </button>
+                    <p id="error-message" class="text-red-500 text-sm mt-2"></p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="bg-gray-100 rounded-lg p-1 flex space-x-1 mb-4">
+                        <button id="summary-tab" class="tab-btn w-1/2 rounded-md py-2 text-sm font-medium leading-5">
+                            Portfolio Summary
+                        </button>
+                        <button id="history-tab" class="tab-btn w-1/2 rounded-md py-2 text-sm font-medium leading-5">
+                            Purchase History
+                        </button>
+                    </div>
+                    <div id="summary-content">
+                        <p class="text-sm text-gray-500 mb-3">Click on a stock to filter the performance table.</p>
+                        <div id="portfolio-list" class="space-y-2">
+                            <p class="text-gray-500">No stocks added yet.</p>
+                        </div>
+                    </div>
+                    <div id="history-content" class="hidden">
+                         <div id="history-pagination-controls" class="flex items-center justify-between pb-4">
+                            <!-- JS-injected content -->
+                         </div>
+                         <div id="purchase-history-list" class="space-y-2 overflow-x-auto">
+                            <!-- Purchase history table will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Performance Table -->
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-2xl font-semibold">Performance</h2>
+                            <p id="performance-subheader" class="text-sm text-gray-500 mt-1 break-words">Whole Portfolio</p>
+                        </div>
+                        <button id="refreshBtn" title="Refresh all stock data" class="text-gray-400 hover:text-sky-800 flex-shrink-0">
+                            <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor" stroke="currentColor" d="M12.077 19q-2.931 0-4.966-2.033q-2.034-2.034-2.034-4.964t2.034-4.966T12.077 5q1.783 0 3.339.847q1.555.847 2.507 2.365V5.5q0-.213.144-.356T18.424 5t.356.144t.143.356v3.923q0 .343-.232.576t-.576.232h-3.923q-.212 0-.356-.144t-.144-.357t.144-.356t.356-.143h3.2q-.78-1.496-2.197-2.364Q13.78 6 12.077 6q-2.5 0-4.25 1.75T6.077 12t1.75 4.25t4.25 1.75q1.787 0 3.271-.968q1.485-.969 2.202-2.573q.085-.196.274-.275q.19-.08.388-.013q.211.067.28.275t-.015.404q-.833 1.885-2.56 3.017T12.077 19" />
+                            </svg>
+                            <div id="refreshLoader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 hidden"></div>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gray-100 rounded-lg p-1 flex space-x-1 mb-4 text-xs">
+                        <button data-range="all" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">All</button>
+                        <button data-range="1y" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">1Y</button>
+                        <button data-range="3m" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">3M</button>
+                        <button data-range="1m" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">1M</button>
+                        <button data-range="custom" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">Custom</button>
+                    </div>
+
+                    <div id="custom-range-picker" class="grid grid-cols-2 gap-4 mb-4 hidden">
+                        <div>
+                            <label for="startDate" class="block text-xs font-medium text-gray-700">Start Date</label>
+                            <input type="date" id="startDate" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800">
+                        </div>
+                        <div>
+                            <label for="endDate" class="block text-xs font-medium text-gray-700">End Date</label>
+                            <input type="date" id="endDate" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                    
+                    <div id="performance-pagination-controls">
+                        <!-- JS-injected content -->
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500  tracking-normal">Date</th>
+                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Open</th>
+                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Close/Current</th>
+                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">DoD Change</th>
+                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">DoD Change %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="performance-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- JS-injected content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION ---
+            const PORTFOLIO_STORAGE_KEY = 'stockPortfolio';
+            const API_KEY_STORAGE_KEY = 'tiingoApiKey';
+            const ROWS_PER_PAGE = 10;
+            
+            // --- SET CHART.JS DEFAULTS ---
+            Chart.defaults.font.family = "'Inter', sans-serif";
+
+            // --- STATE MANAGEMENT ---
+            let apiKey = '';
+            let portfolio = []; 
+            let selectedTickers = [];
+            let fullSummaryData = [];
+            let performanceCurrentPage = 0;
+            let historyCurrentPage = 0;
+            let performanceChart = null;
+            let activeDateRange = 'all'; // Default range set to 'all'
+            let activePriceType = 'normal'; // Default price type is now normal
+
+            // --- DOM ELEMENTS ---
+            const tickerInput = document.getElementById('ticker');
+            const sharesInput = document.getElementById('shares');
+            const purchaseDateInput = document.getElementById('purchaseDate');
+            const addStockBtn = document.getElementById('addStockBtn');
+            const addStockBtnText = document.getElementById('addStockBtnText');
+            const addStockLoader = document.getElementById('addStockLoader');
+            const errorMessage = document.getElementById('error-message');
+            const portfolioList = document.getElementById('portfolio-list');
+            const purchaseHistoryList = document.getElementById('purchase-history-list');
+            const tableBody = document.getElementById('performance-table-body');
+            const performanceSubheader = document.getElementById('performance-subheader');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const refreshIcon = document.getElementById('refreshIcon');
+            const refreshLoader = document.getElementById('refreshLoader');
+            const performancePaginationControls = document.getElementById('performance-pagination-controls');
+            const historyPaginationControls = document.getElementById('history-pagination-controls');
+            // Tab Elements
+            const summaryTab = document.getElementById('summary-tab');
+            const historyTab = document.getElementById('history-tab');
+            const summaryContent = document.getElementById('summary-content');
+            const historyContent = document.getElementById('history-content');
+            // Settings UI Elements
+            const settingsButton = document.getElementById('settings-button');
+            const settingsDropdown = document.getElementById('settings-dropdown');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+            const apiKeyError = document.getElementById('api-key-error');
+            // Download/Upload UI Elements
+            const downloadBtn = document.getElementById('downloadBtn');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const fileUpload = document.getElementById('fileUpload');
+            const uploadError = document.getElementById('upload-error');
+            // Force Refresh Button
+            const forceRefreshBtn = document.getElementById('forceRefreshBtn');
+            // Date Range Elements
+            const rangeButtons = document.querySelectorAll('.range-btn');
+            const customRangePicker = document.getElementById('custom-range-picker');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            // Price Type Elements
+            const priceButtons = document.querySelectorAll('.price-btn');
+
+
+            // --- INITIALIZATION ---
+            async function initialize() {
+                purchaseDateInput.value = new Date().toISOString().split('T')[0];
+                loadApiKeyFromStorage();
+                setupApiKeyUI();
+                await loadPortfolioFromStorage();
+                renderAllPortfolioViews();
+                updatePortfolioSummary();
+                setActiveTab('summary');
+                setActiveDateRange(activeDateRange);
+                setActivePriceType(activePriceType);
+            }
+            
+            initialize();
+
+            // --- EVENT LISTENERS ---
+            addStockBtn.addEventListener('click', handleAddStock);
+            refreshBtn.addEventListener('click', handleRefreshAllData);
+            saveApiKeyBtn.addEventListener('click', handleSaveApiKey);
+            settingsButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                settingsDropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', (e) => {
+                if (!settingsDropdown.contains(e.target) && !settingsButton.contains(e.target)) {
+                    settingsDropdown.classList.add('hidden');
+                }
+            });
+            downloadBtn.addEventListener('click', handleDownloadData);
+            uploadBtn.addEventListener('click', () => fileUpload.click());
+            fileUpload.addEventListener('change', handleUploadData);
+            summaryTab.addEventListener('click', () => setActiveTab('summary'));
+            historyTab.addEventListener('click', () => setActiveTab('history'));
+            forceRefreshBtn.addEventListener('click', handleForceRefresh);
+            rangeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    setActiveDateRange(button.dataset.range);
+                    updatePortfolioSummary();
+                });
+            });
+            priceButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    setActivePriceType(button.dataset.price);
+                    updatePortfolioSummary();
+                });
+            });
+            startDateInput.addEventListener('change', () => updatePortfolioSummary());
+            endDateInput.addEventListener('change', () => updatePortfolioSummary());
+
+
+            // --- TAB MANAGEMENT ---
+            function setActiveTab(tabName) {
+                if (tabName === 'summary') {
+                    summaryTab.classList.add('active');
+                    historyTab.classList.remove('active');
+                    summaryContent.classList.remove('hidden');
+                    historyContent.classList.add('hidden');
+                } else {
+                    historyTab.classList.add('active');
+                    summaryTab.classList.remove('active');
+                    historyContent.classList.remove('hidden');
+                    summaryContent.classList.add('hidden');
+                }
+            }
+            
+            function setActiveDateRange(range) {
+                activeDateRange = range;
+                rangeButtons.forEach(btn => {
+                    if (btn.dataset.range === range) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                if (range === 'custom') {
+                    customRangePicker.classList.remove('hidden');
+                } else {
+                    customRangePicker.classList.add('hidden');
+                }
+                performanceCurrentPage = 0;
+            }
+
+            function setActivePriceType(priceType) {
+                activePriceType = priceType;
+                priceButtons.forEach(btn => {
+                    if (btn.dataset.price === priceType) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            // --- DATA IMPORT/EXPORT ---
+            async function handleDownloadData() {
+                if (portfolio.length === 0) {
+                    alert('Portfolio is empty. Add stocks to download data.');
+                    return;
+                }
+
+                const dataStr = JSON.stringify(portfolio, null, 2);
+                const dataBlob = new Blob([dataStr], {type: "application/json"});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.download = 'portfolio-backup.json';
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+
+            function handleUploadData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                uploadError.textContent = '';
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const uploadedData = JSON.parse(e.target.result);
+                        if (!Array.isArray(uploadedData) || (uploadedData.length > 0 && (!uploadedData[0].ticker || !uploadedData[0].shares || !uploadedData[0].purchaseDate))) {
+                           throw new Error('Invalid file format.');
+                        }
+                        
+                        portfolio = uploadedData;
+                        selectedTickers = [];
+                        await savePortfolioToStorage();
+                        renderAllPortfolioViews();
+                        updatePortfolioSummary();
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        uploadError.textContent = 'Failed to upload. Please ensure the file is a valid portfolio backup.';
+                    }
+                };
+                reader.onerror = () => { uploadError.textContent = 'Error reading the file.'; }
+                reader.readAsText(file);
+                event.target.value = '';
+            }
+
+
+            // --- API KEY MANAGEMENT ---
+            function handleSaveApiKey() {
+                const key = apiKeyInput.value.trim();
+                apiKeyError.textContent = '';
+                if (!key) {
+                    errorMessage.textContent = 'Please save your API key before adding stocks.';
+                    return;
+                }
+                apiKey = key;
+                localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+                alert('API Key saved!');
+                settingsDropdown.classList.add('hidden');
+            }
+            
+            function loadApiKeyFromStorage() {
+                const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+                if (savedKey) { apiKey = savedKey; }
+            }
+            
+            function setupApiKeyUI() {
+                if(apiKey) {
+                    apiKeyInput.value = apiKey;
+                }
+            }
+
+
+            // --- DATA PERSISTENCE ---
+            async function savePortfolioToStorage() {
+                try {
+                    localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(portfolio));
+                } catch(e) {
+                    console.error("Failed to save to localStorage:", e);
+                    alert("Error: Could not save portfolio. Storage might be full.");
+                }
+            }
+
+            async function loadPortfolioFromStorage() {
+                const savedData = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
+                if (savedData) { 
+                    const parsedData = JSON.parse(savedData);
+                    for(const purchase of parsedData) {
+                         if (!purchase.id) purchase.id = crypto.randomUUID();
+                    }
+                    portfolio = parsedData;
+                }
+            }
+
+
+            // --- CORE LOGIC ---
+            async function handleAddStock() {
+                const ticker = tickerInput.value.trim().toUpperCase();
+                const shares = parseFloat(sharesInput.value);
+                const purchaseDate = purchaseDateInput.value;
+                if (!validateInput(ticker, shares, purchaseDate)) return;
+
+                toggleLoading('add', true);
+                try {
+                    const existingStock = portfolio.find(s => s.ticker === ticker);
+                    let historicalData;
+                    
+                    if (existingStock) {
+                        historicalData = existingStock.historicalData;
+                    } else {
+                        const today = new Date().toISOString().split('T')[0];
+                        historicalData = await fetchHistoricalData(ticker, { startDate: purchaseDate, endDate: today });
+                    }
+                    
+                    const newPurchase = { 
+                        id: crypto.randomUUID(),
+                        ticker, 
+                        shares, 
+                        purchaseDate, 
+                        historicalData 
+                    };
+                    portfolio.push(newPurchase);
+
+                    await savePortfolioToStorage();
+                    renderAllPortfolioViews();
+                    updatePortfolioSummary();
+                    tickerInput.value = '';
+                    sharesInput.value = '';
+                } catch (error) {
+                    console.error('Error adding stock:', error);
+                    errorMessage.textContent = error.message;
+                } finally {
+                    toggleLoading('add', false);
+                }
+            }
+
+            async function handleRefreshAllData(isForceRefresh = false) {
+                if (portfolio.length === 0) return;
+                toggleLoading('refresh', true);
+                errorMessage.textContent = '';
+                try {
+                    const uniqueTickers = [...new Set(portfolio.map(s => s.ticker))];
+                    const today = new Date();
+                    const todayString = today.toISOString().split('T')[0];
+
+                    const updatePromises = uniqueTickers.map(async (ticker) => {
+                        // Backfill historical data if needed
+                        const purchasesForTicker = portfolio.filter(p => p.ticker === ticker);
+                        const mostRecentDateStr = getMostRecentDate(purchasesForTicker[0].historicalData);
+                        let startDateForHist = null;
+
+                        if (isForceRefresh) {
+                            startDateForHist = purchasesForTicker.reduce((oldest, p) => new Date(p.purchaseDate) < new Date(oldest) ? p.purchaseDate : oldest, purchasesForTicker[0].purchaseDate);
+                        } else if (mostRecentDateStr) {
+                            const mostRecentDate = new Date(mostRecentDateStr + 'T00:00:00');
+                            const yesterday = new Date();
+                            yesterday.setDate(yesterday.getDate() - 1);
+                            if (mostRecentDate < yesterday) {
+                                const nextDay = new Date(mostRecentDate);
+                                nextDay.setDate(nextDay.getDate() + 1);
+                                startDateForHist = nextDay.toISOString().split('T')[0];
+                            }
+                        } else {
+                           startDateForHist = purchasesForTicker.reduce((oldest, p) => new Date(p.purchaseDate) < new Date(oldest) ? p.purchaseDate : oldest, purchasesForTicker[0].purchaseDate);
+                        }
+
+                        if (startDateForHist) {
+                            const newHistoricalData = await fetchHistoricalData(ticker, { startDate: startDateForHist, endDate: todayString });
+                            portfolio.forEach(stock => {
+                                if (stock.ticker === ticker) {
+                                    stock.historicalData = { ...stock.historicalData, ...newHistoricalData };
+                                }
+                            });
+                        }
+
+                        // Fetch today's data with new logic
+                        let todaysDataFetched = false;
+                        if (isAfterMarketCloseEST()) {
+                            try {
+                                const dailyData = await fetchHistoricalData(ticker, {}); // No date params fetches latest
+                                if (dailyData && dailyData[todayString]) {
+                                    portfolio.forEach(stock => {
+                                        if (stock.ticker === ticker) {
+                                            stock.historicalData = { ...stock.historicalData, ...dailyData };
+                                        }
+                                    });
+                                    todaysDataFetched = true;
+                                }
+                            } catch (e) {
+                                console.warn(`Could not fetch daily EOD for ${ticker}, falling back to IEX.`, e);
+                            }
+                        }
+
+                        if (!todaysDataFetched) {
+                            const iexUrl = `https://api.tiingo.com/iex/?tickers=${ticker}`;
+                            const headers = { 'Authorization': `Token ${apiKey}` };
+                            const iexResponse = await fetch(iexUrl, { headers });
+                            if (iexResponse.ok) {
+                                const iexData = await iexResponse.json();
+                                if (iexData && iexData[0] && iexData[0].open != null && iexData[0].tngoLast != null) {
+                                    const latestData = iexData[0];
+                                    portfolio.forEach(stock => {
+                                        if (stock.ticker === ticker) {
+                                            if (!stock.historicalData) stock.historicalData = {};
+                                            stock.historicalData[todayString] = {
+                                                "1. open": latestData.open,
+                                                "2. close": latestData.tngoLast,
+                                                "3. adjOpen": latestData.open,
+                                                "4. adjClose": latestData.tngoLast,
+                                                "5. divCash": 0, // IEX doesn't provide this
+                                                "6. splitFactor": 1 // IEX doesn't provide this
+                                            };
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+
+                    await Promise.all(updatePromises);
+                    await savePortfolioToStorage();
+                    renderAllPortfolioViews();
+                    updatePortfolioSummary();
+
+                } catch (error) {
+                    console.error('Error refreshing data:', error);
+                    errorMessage.textContent = error.message;
+                } finally {
+                    toggleLoading('refresh', false);
+                }
+            }
+
+            function handleForceRefresh() {
+                handleRefreshAllData(true);
+            }
+
+            async function fetchHistoricalData(ticker, { startDate, endDate }) {
+                let url = `https://api.tiingo.com/tiingo/daily/${ticker}/prices?resampleFreq=daily&sort=-date&columns=date,open,close,adjOpen,adjClose,divCash,splitFactor`;
+                if(startDate && endDate) {
+                    url += `&startDate=${startDate}&endDate=${endDate}`;
+                }
+                const headers = { 'Authorization': `Token ${apiKey}` };
+                
+                const response = await fetch(url, { headers });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let message = `API Error for ${ticker}: ${response.status} ${response.statusText}`;
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        if (errorData.detail) {
+                            message += ` - ${errorData.detail}`;
+                        }
+                    } catch (e) {
+                        message += ` - ${errorText}`;
+                    }
+                    throw new Error(message);
+                }
+                
+                const data = await response.json();
+
+                // The API returns an array for a date range, but a single object when no dates are provided.
+                const dataArray = Array.isArray(data) ? data : [data];
+                
+                if (dataArray.length === 0) {
+                   return {};
+                }
+
+                // **MODIFIED** The reduce function now includes divCash and splitFactor
+                const transformedData = dataArray.reduce((acc, item) => {
+                    if(item && item.date) {
+                        acc[item.date.split('T')[0]] = {
+                            "1. open": item.open,
+                            "2. close": item.close,
+                            "3. adjOpen": item.adjOpen,
+                            "4. adjClose": item.adjClose,
+                            "5. divCash": item.divCash,
+                            "6. splitFactor": item.splitFactor
+                        };
+                    }
+                    return acc;
+                }, {});
+
+                return transformedData;
+            }
+
+            function updatePortfolioSummary() {
+                if (selectedTickers.length === 0 || selectedTickers.length === [...new Set(portfolio.map(s => s.ticker))].length) {
+                    performanceSubheader.textContent = 'Whole Portfolio';
+                } else {
+                    performanceSubheader.textContent = selectedTickers.join(', ');
+                }
+
+                const stocksToDisplay = selectedTickers.length > 0
+                    ? portfolio.filter(stock => selectedTickers.includes(stock.ticker))
+                    : portfolio;
+
+                if (stocksToDisplay.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">Select a stock or add one to your portfolio.</td></tr>`;
+                    performancePaginationControls.innerHTML = '';
+                    if (performanceChart) {
+                        performanceChart.destroy();
+                        performanceChart = null;
+                    }
+                    return;
+                }
+
+                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">Calculating...</td></tr>`;
+
+                // Determine date range for filtering
+                const today = new Date();
+                let startDate = new Date();
+                let endDate = new Date(today);
+
+                const firstPurchaseDate = getFirstPurchaseDate();
+                if (!firstPurchaseDate) {
+                    fullSummaryData = [];
+                    renderPaginatedPerformanceTable();
+                    renderPerformanceChart();
+                    return;
+                }
+
+                switch (activeDateRange) {
+                    case '1m':
+                        startDate.setMonth(today.getMonth() - 1);
+                        break;
+                    case '3m':
+                        startDate.setMonth(today.getMonth() - 3);
+                        break;
+                    case '1y':
+                        startDate.setFullYear(today.getFullYear() - 1);
+                        break;
+                    case 'all':
+                        startDate = new Date(firstPurchaseDate);
+                        break;
+                    case 'custom':
+                        startDate = new Date(startDateInput.value + 'T00:00:00');
+                        endDate = new Date(endDateInput.value + 'T00:00:00');
+                        break;
+                }
+
+                const dailyValues = [];
+                const openKey = activePriceType === 'adjusted' ? '3. adjOpen' : '1. open';
+                const closeKey = activePriceType === 'adjusted' ? '4. adjClose' : '2. close';
+                
+                // Loop from end date to start date to build the values array
+                for (let d = new Date(endDate); d >= startDate; d.setDate(d.getDate() - 1)) {
+                    const dateString = d.toISOString().split('T')[0];
+                    let dailyTotalOpen = 0, dailyTotalClose = 0, dataFoundForDay = false;
+
+                    for (const stock of stocksToDisplay) {
+                        if (stock.historicalData && new Date(stock.purchaseDate) <= d) {
+                            const dayData = stock.historicalData[dateString];
+                            if (dayData) {
+                                dataFoundForDay = true;
+                                dailyTotalOpen += parseFloat(dayData[openKey]) * stock.shares;
+                                dailyTotalClose += parseFloat(dayData[closeKey]) * stock.shares;
+                            }
+                        }
+                    }
+                    if (dataFoundForDay) {
+                        dailyValues.push({ date: dateString, openingValue: dailyTotalOpen, closingValue: dailyTotalClose });
+                    }
+                }
+
+                const calculatedSummary = [];
+                for (let i = 0; i < dailyValues.length - 1; i++) {
+                    const todayData = dailyValues[i];
+                    const yesterdayData = dailyValues[i+1];
+                    const change = todayData.closingValue - yesterdayData.closingValue;
+                    const changePercent = yesterdayData.closingValue === 0 ? 0 : (change / yesterdayData.closingValue) * 100;
+                    calculatedSummary.push({ ...todayData, change, changePercent });
+                }
+                
+                if (dailyValues.length > 0) {
+                     const lastDay = dailyValues[dailyValues.length - 1];
+                     if(lastDay && (calculatedSummary.length === 0 || calculatedSummary[calculatedSummary.length-1].date !== lastDay.date)) {
+                        calculatedSummary.push({ ...lastDay, change: null, changePercent: null });
+                     }
+                }
+                fullSummaryData = calculatedSummary;
+                renderPaginatedPerformanceTable();
+                renderPerformanceChart();
+            }
+
+            // --- UI RENDERING ---
+            function renderAllPortfolioViews() {
+                historyCurrentPage = 0;
+                renderPortfolioList();
+                renderPaginatedHistory();
+                setupCustomDatePickers();
+            }
+
+            function renderPaginatedPerformanceTable() {
+                const start = performanceCurrentPage * ROWS_PER_PAGE;
+                const end = start + ROWS_PER_PAGE;
+                const paginatedData = fullSummaryData.slice(start, end);
+                renderSummaryTable(paginatedData);
+                renderPerformancePaginationControls();
+            }
+            
+            function renderPaginatedHistory() {
+                const sortedPortfolio = [...portfolio].sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
+                const start = historyCurrentPage * ROWS_PER_PAGE;
+                const end = start + ROWS_PER_PAGE;
+                const paginatedData = sortedPortfolio.slice(start, end);
+                renderPurchaseHistoryTable(paginatedData);
+                renderHistoryPaginationControls();
+            }
+
+            function getPriceOnDate(historicalData, dateString) {
+                if (!historicalData || !dateString) return 0;
+                const closeKey = activePriceType === 'adjusted' ? '4. adjClose' : '2. close';
+                
+                // Find the latest available date on or before the given dateString
+                const availableDates = Object.keys(historicalData).filter(d => new Date(d) <= new Date(dateString)).sort((a,b) => new Date(b) - new Date(a));
+                if (availableDates.length > 0) {
+                    const dataForDate = historicalData[availableDates[0]];
+                    if (dataForDate && dataForDate[closeKey] != null) {
+                        return parseFloat(dataForDate[closeKey]);
+                    }
+                }
+                
+                return 0;
+            }
+            
+            function getMostRecentDate(historicalData) {
+                 if (!historicalData || Object.keys(historicalData).length === 0) {
+                    return null;
+                }
+                const sortedDates = Object.keys(historicalData).sort((a, b) => new Date(b) - new Date(a));
+                return sortedDates[0];
+            }
+
+
+            function renderPortfolioList() {
+                if (portfolio.length === 0) {
+                    portfolioList.innerHTML = `<p class="text-gray-500">No stocks added yet.</p>`;
+                    return;
+                }
+
+                const portfolioSummary = portfolio.reduce((acc, purchase) => {
+                    if (!acc[purchase.ticker]) {
+                        acc[purchase.ticker] = {
+                            totalShares: 0,
+                            totalPurchaseValue: 0,
+                            historicalData: purchase.historicalData,
+                        };
+                    }
+                    acc[purchase.ticker].totalShares += purchase.shares;
+                    const purchasePrice = getPriceOnDate(purchase.historicalData, purchase.purchaseDate);
+                    acc[purchase.ticker].totalPurchaseValue += purchase.shares * purchasePrice;
+                    return acc;
+                }, {});
+
+
+                portfolioList.innerHTML = Object.keys(portfolioSummary).map(ticker => {
+                    const stockInfo = portfolioSummary[ticker];
+                    const isSelected = selectedTickers.includes(ticker);
+                    const mostRecentDate = getMostRecentDate(stockInfo.historicalData);
+                    const latestPrice = getPriceOnDate(stockInfo.historicalData, mostRecentDate);
+                    const currentValue = stockInfo.totalShares * latestPrice;
+                    const valueChange = currentValue - stockInfo.totalPurchaseValue;
+                    const changeColor = valueChange >= 0 ? 'text-green-600' : 'text-red-600';
+                    const sign = valueChange >= 0 ? '+' : '';
+
+                    return `
+                    <div class="stock-item bg-gray-50 p-2 py-1 pt-1 rounded-md border-2 border-transparent cursor-pointer transition-colors ${isSelected ? 'selected' : ''}" onclick="handleStockSelection('${ticker}')">
+                        <div style="display: flex">
+                            <div style="text-align: left">
+                                <p class="font-bold text-sky-800">${ticker}</p>
+                                <p class="text-xs text-gray-600">${stockInfo.totalShares} units</p>
+                            </div>
+                            <div style="margin-left: auto; text-align: right">
+                                <p class="text-xs text-gray-600 mt-1">Purchase Value: ${formatCurrency(stockInfo.totalPurchaseValue)}</p>
+                                <p class="text-xs text-gray-600 mt-1">
+                                    Current Value: ${formatCurrency(currentValue)} 
+                                    <span class="${changeColor}">(${sign}${formatCurrency(valueChange)})</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+            }
+
+            function renderPurchaseHistoryTable(data) {
+                 if (portfolio.length === 0) {
+                    purchaseHistoryList.innerHTML = `<p class="text-gray-500 p-4 text-center">No purchases recorded yet.</p>`;
+                    return;
+                }
+                
+                const tableRows = data.map(purchase => {
+                    const purchasePrice = getPriceOnDate(purchase.historicalData, purchase.purchaseDate);
+                    const totalCost = purchase.shares * purchasePrice;
+                    return `
+                        <tr>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">${formatDateForDisplay(purchase.purchaseDate)}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500">${purchase.ticker}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500">${purchase.shares}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500 text-right">${formatCurrency(totalCost)}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-center">
+                                <button onclick="removePurchase('${purchase.id}')" class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd"></path></svg>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                purchaseHistoryList.innerHTML = `
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500  tracking-normal">Date</th>
+                                <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500  tracking-normal">Ticker</th>
+                                <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500  tracking-normal">Shares</th>
+                                <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Est. Cost</th>
+                                <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            function renderSummaryTable(data) {
+                if (data.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">No trading data available for this period.</td></tr>`;
+                    return;
+                }
+                tableBody.innerHTML = data.map(day => {
+                    const isChangeAvailable = day.change !== null;
+                    const changeColor = isChangeAvailable && day.change >= 0 ? 'text-green-600' : 'text-red-600';
+                    const sign = isChangeAvailable && day.change >= 0 ? '+' : '';
+                    const changeText = isChangeAvailable ? `${sign}${formatCurrency(day.change)}` : 'N/A';
+                    const changePercentText = isChangeAvailable ? `${sign}${day.changePercent.toFixed(2)}%` : 'N/A';
+                    const changeTextColor = isChangeAvailable ? changeColor : 'text-gray-500';
+
+                    return `
+                        <tr>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">${formatDateForDisplay(day.date)}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500 text-right">${formatCurrency(day.openingValue)}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500 text-right">${formatCurrency(day.closingValue)}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs ${changeTextColor} text-right">${changeText}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs ${changeTextColor} text-right">${changePercentText}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            function renderPerformancePaginationControls() {
+                const totalItems = fullSummaryData.length;
+                if (totalItems <= ROWS_PER_PAGE) {
+                    performancePaginationControls.innerHTML = '';
+                    return;
+                }
+                const startItem = performanceCurrentPage * ROWS_PER_PAGE + 1;
+                const endItem = Math.min(startItem + ROWS_PER_PAGE - 1, totalItems);
+                const prevDisabled = performanceCurrentPage === 0 ? 'disabled' : '';
+                const nextDisabled = endItem >= totalItems ? 'disabled' : '';
+                
+                performancePaginationControls.innerHTML = `
+                    <div class="flex items-center justify-between py-3">
+                        <div class="flex-1 flex justify-between sm:hidden">
+                            <!-- Mobile pagination can be added here if needed -->
+                        </div>
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Showing
+                                    <span class="font-medium">${startItem}</span>
+                                    to
+                                    <span class="font-medium">${endItem}</span>
+                                    of
+                                    <span class="font-medium">${totalItems}</span>
+                                    results
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                    <button id="perfPrevPageBtn" ${prevDisabled} class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:text-gray-300 disabled:hover:bg-white">
+                                        <span class="sr-only">Previous</span>
+                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                    <button id="perfNextPageBtn" ${nextDisabled} class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:text-gray-300 disabled:hover:bg-white">
+                                        <span class="sr-only">Next</span>
+                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('perfPrevPageBtn').addEventListener('click', () => {
+                    if (performanceCurrentPage > 0) {
+                        performanceCurrentPage--;
+                        renderPaginatedPerformanceTable();
+                    }
+                });
+                document.getElementById('perfNextPageBtn').addEventListener('click', () => {
+                    if (endItem < totalItems) {
+                        performanceCurrentPage++;
+                        renderPaginatedPerformanceTable();
+                    }
+                });
+            }
+
+            function renderHistoryPaginationControls() {
+                const totalItems = portfolio.length;
+                 if (totalItems <= ROWS_PER_PAGE) {
+                    historyPaginationControls.innerHTML = '';
+                    return;
+                }
+                const startItem = historyCurrentPage * ROWS_PER_PAGE + 1;
+                const endItem = Math.min(startItem + ROWS_PER_PAGE - 1, totalItems);
+                const prevDisabled = historyCurrentPage === 0 ? 'disabled' : '';
+                const nextDisabled = endItem >= totalItems ? 'disabled' : '';
+
+                historyPaginationControls.innerHTML = `
+                     <div class="flex items-center justify-between">
+                         <p class="text-sm text-gray-700">
+                            Showing
+                            <span class="font-medium">${startItem}</span>
+                            to
+                            <span class="font-medium">${endItem}</span>
+                            of
+                            <span class="font-medium">${totalItems}</span>
+                        </p>
+                        <div class="flex space-x-2">
+                            <button id="histPrevPageBtn" ${prevDisabled} class="p-2 rounded-md hover:bg-gray-200 disabled:text-gray-300 disabled:hover:bg-transparent">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                            </button>
+                            <button id="histNextPageBtn" ${nextDisabled} class="p-2 rounded-md hover:bg-gray-200 disabled:text-gray-300 disabled:hover:bg-transparent">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('histPrevPageBtn').addEventListener('click', () => {
+                    if (historyCurrentPage > 0) {
+                        historyCurrentPage--;
+                        renderPaginatedHistory();
+                    }
+                });
+                 document.getElementById('histNextPageBtn').addEventListener('click', () => {
+                    if (endItem < totalItems) {
+                        historyCurrentPage++;
+                        renderPaginatedHistory();
+                    }
+                });
+            }
+
+            function renderPerformanceChart() {
+                const ctx = document.getElementById('performanceChart').getContext('2d');
+                if (performanceChart) {
+                    performanceChart.destroy();
+                }
+                
+                if (fullSummaryData.length === 0) return;
+
+                const chartData = [...fullSummaryData].reverse(); // Display oldest to newest
+                const labels = chartData.map(d => formatDateForDisplay(d.date));
+                const dataPoints = chartData.map(d => d.closingValue);
+                
+                const maxValue = Math.max(...dataPoints);
+                const yAxisMax = maxValue * 1.03; // 10% more than max value
+
+                performanceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Portfolio Value',
+                            data: dataPoints,
+                            borderColor: '#0c4a6e', // sky-800
+                            backgroundColor: 'rgba(12, 74, 110, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.1,
+                            fill: true,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                max: yAxisMax,
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 0,
+                                    minRotation: 0,
+                                    autoSkip: true,
+                                    maxTicksLimit: 10,
+                                    autoSkipPadding: 50
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${formatCurrency(context.parsed.y)}`;
+                                    }
+                                }
+                            },
+                            crosshair: {
+                                line: {
+                                    color: '#6b7280',  // gray-500
+                                    width: 1
+                                },
+                                sync: {
+                                    enabled: false
+                                },
+                                snap: {
+                                    enabled: true     // Snap crosshair to data points
+                                },
+                                zoom: {
+                                    enabled: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // --- UI INTERACTION HANDLERS (attached to window) ---
+            window.handleStockSelection = (ticker) => {
+                const index = selectedTickers.indexOf(ticker);
+                if (index > -1) { selectedTickers.splice(index, 1); } 
+                else { selectedTickers.push(ticker); }
+                renderAllPortfolioViews();
+                updatePortfolioSummary();
+            }
+
+            window.removePurchase = (id) => {
+                const purchaseToRemove = portfolio.find(p => p.id === id);
+                if (!purchaseToRemove) return;
+
+                portfolio = portfolio.filter(p => p.id !== id);
+
+                const remainingOfTicker = portfolio.some(p => p.ticker === purchaseToRemove.ticker);
+                if (!remainingOfTicker) {
+                    selectedTickers = selectedTickers.filter(t => t !== purchaseToRemove.ticker);
+                }
+
+                savePortfolioToStorage();
+                renderAllPortfolioViews();
+                updatePortfolioSummary();
+            }
+
+            // --- UTILITY FUNCTIONS ---
+            function isAfterMarketCloseEST() {
+                const now = new Date();
+                const estDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+                const estDay = estDate.getDay(); // Sunday = 0, Saturday = 6
+                const estHour = estDate.getHours();
+                const estMinute = estDate.getMinutes();
+
+                // Market is closed on weekends
+                if (estDay === 0 || estDay === 6) {
+                    return true; 
+                }
+                
+                // Check if time is 5:30 PM (17:30) or later
+                return estHour > 17 || (estHour === 17 && estMinute >= 30);
+            }
+
+            function validateInput(ticker, shares, purchaseDate) {
+                errorMessage.textContent = '';
+                if (!apiKey) {
+                    errorMessage.textContent = 'Please save your API key before adding stocks.';
+                    return false;
+                }
+                if (!ticker || !shares || !purchaseDate) {
+                    errorMessage.textContent = 'All fields are required.';
+                    return false;
+                }
+                if (shares <= 0) {
+                    errorMessage.textContent = 'Number of shares must be positive.';
+                    return false;
+                }
+                return true;
+            }
+
+            function toggleLoading(type, isLoading) {
+                if (type === 'add') {
+                    addStockBtn.disabled = isLoading;
+                    addStockBtnText.classList.toggle('hidden', isLoading);
+                    addStockLoader.classList.toggle('hidden', !isLoading);
+                } else if (type === 'refresh') {
+                    refreshBtn.disabled = isLoading;
+                    refreshIcon.classList.toggle('hidden', isLoading);
+                    refreshLoader.classList.toggle('hidden', !isLoading);
+                }
+            }
+
+            function formatDateForDisplay(dateString) {
+                if (!dateString) return '';
+                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const date = new Date(dateString + 'T00:00:00');
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = months[date.getMonth()];
+                const year = String(date.getFullYear()).slice(-2);
+                return `${day}/${month}/${year}`;
+            }
+
+            function formatCurrency(value) {
+                if (typeof value !== 'number') {
+                    return '$0.00';
+                }
+                return value.toLocaleString('en-US', { style: 'currency', 'currency': 'USD' });
+            }
+
+            function getFirstPurchaseDate() {
+                if (portfolio.length === 0) return null;
+                return portfolio.reduce((oldest, p) => new Date(p.purchaseDate) < new Date(oldest) ? p.purchaseDate : oldest, portfolio[0].purchaseDate);
+            }
+
+            function setupCustomDatePickers() {
+                const firstPurchase = getFirstPurchaseDate();
+                const today = new Date().toISOString().split('T')[0];
+                if (firstPurchase) {
+                    startDateInput.min = firstPurchase;
+                    startDateInput.value = firstPurchase;
+                }
+                endDateInput.max = today;
+                endDateInput.value = today;
+            }
+        });
+    </script>
+
+</body>
+</html>
