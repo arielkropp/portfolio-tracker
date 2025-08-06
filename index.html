@@ -1068,8 +1068,8 @@
                 
                 const minValue = Math.min(...dataPoints);
                 const maxValue = Math.max(...dataPoints);
-                const yAxisMax = maxValue * 1.03;
-				const yAxisMin = maxValue * 0.97;
+                const yAxisMax = maxValue * 1.05;
+				const yAxisMin = minValue * 0.95;
 
                 performanceChart = new Chart(ctx, {
                     type: 'line',
@@ -1099,9 +1099,13 @@
                                 max: yAxisMax,
 								min: yAxisMin,
                                 ticks: {
-                                    callback: function(value, index, values) {
-                                        return formatCurrency(value);
-                                    }
+                                    callback: function(value, index, ticks) {
+										if (index === 0 || index === ticks.length - 1) {
+											return '';
+										}
+										return formatCurrency(value);
+        							},
+									maxTicksLimit: 7
                                 }
                             },
                             x: {
@@ -1148,27 +1152,35 @@
                                         type: 'line',
                                         yMin: maxValue,
                                         yMax: maxValue,
-                                        borderColor: 'rgb(220, 38, 38)',
+                                        borderColor: 'orange',
                                         borderWidth: 1,
                                         borderDash: [6, 6],
                                         label: {
-                                            content: 'Max: ' + formatCurrency(maxValue),
+											yAdjust: -10,
+                                            content: 'High: ' + formatCurrency(maxValue),
                                             display: true,
                                             position: 'start',
-                                            backgroundColor: 'rgba(22, 163, 74, 0.8)'
+											font: {weight:'500'},
+											backgroundColor: 'transparent',
+                                            color: 'rgba(0,0,0,0.7)'
                                         }
                                     },
                                     minLine: {
                                         type: 'line',
                                         yMin: minValue,
                                         yMax: minValue,
+										
+                                        borderColor: 'orange', // green-600
                                         borderWidth: 1,
                                         borderDash: [6, 6],
                                         label: {
-                                            content: 'Min: ' + formatCurrency(minValue),
+											yAdjust: 15,
+                                            content: 'Low: ' + formatCurrency(minValue),
                                             display: true,
-                                            position: 'end',
-                                            backgroundColor: 'rgba(220, 38, 38, 0.8)'
+                                            position: 'start',
+											font: {weight:'500'},
+											backgroundColor: 'transparent',
+                                            color: 'rgba(0,0,0,0.7)'
                                         }
                                     }
                                 }
