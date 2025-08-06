@@ -6,7 +6,8 @@
     <title>Portfolio Stock Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair@2.0.0/dist/chartjs-plugin-crosshair.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -1065,10 +1066,9 @@
                 const labels = chartData.map(d => formatDateForDisplay(d.date));
                 const dataPoints = chartData.map(d => d.closingValue);
                 
+                const minValue = Math.min(...dataPoints);
                 const maxValue = Math.max(...dataPoints);
-				const minValue = Math.min(...dataPoints);
-                const yAxisMax = maxValue * 1.03; // 3% more than max value
-				const yAxisMin = minValue * 0.97;
+                const yAxisMax = maxValue * 1.03;
 
                 performanceChart = new Chart(ctx, {
                     type: 'line',
@@ -1096,7 +1096,6 @@
                             y: {
                                 beginAtZero: false,
                                 max: yAxisMax,
-								min: yAxisMin,
                                 ticks: {
                                     callback: function(value, index, values) {
                                         return formatCurrency(value);
@@ -1104,6 +1103,7 @@
                                 }
                             },
                             x: {
+                                bounds: 'data',
                                 ticks: {
                                     maxRotation: 0,
                                     minRotation: 0,
@@ -1138,6 +1138,38 @@
                                 },
                                 zoom: {
                                     enabled: false
+                                }
+                            },
+                            annotation: {
+                                annotations: {
+                                    maxLine: {
+                                        type: 'line',
+                                        yMin: maxValue,
+                                        yMax: maxValue,
+                                        borderColor: 'rgb(220, 38, 38)', // red-600
+                                        borderWidth: 1,
+                                        borderDash: [6, 6],
+                                        label: {
+                                            content: 'Max: ' + formatCurrency(maxValue),
+                                            enabled: true,
+                                            position: 'start',
+                                            backgroundColor: 'rgba(220, 38, 38, 0.8)'
+                                        }
+                                    },
+                                    minLine: {
+                                        type: 'line',
+                                        yMin: minValue,
+                                        yMax: minValue,
+                                        borderColor: 'rgb(22, 163, 74)', // green-600
+                                        borderWidth: 1,
+                                        borderDash: [6, 6],
+                                        label: {
+                                            content: 'Min: ' + formatCurrency(minValue),
+                                            enabled: true,
+                                            position: 'start',
+                                            backgroundColor: 'rgba(22, 163, 74, 0.8)'
+                                        }
+                                    }
                                 }
                             }
                         }
