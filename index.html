@@ -1069,6 +1069,7 @@
                 const minValue = Math.min(...dataPoints);
                 const maxValue = Math.max(...dataPoints);
                 const yAxisMax = maxValue * 1.03;
+				const yAxisMin = maxValue * 0.97;
 
                 performanceChart = new Chart(ctx, {
                     type: 'line',
@@ -1096,6 +1097,7 @@
                             y: {
                                 beginAtZero: false,
                                 max: yAxisMax,
+								min: yAxisMin,
                                 ticks: {
                                     callback: function(value, index, values) {
                                         return formatCurrency(value);
@@ -1146,28 +1148,27 @@
                                         type: 'line',
                                         yMin: maxValue,
                                         yMax: maxValue,
-                                        borderColor: 'rgb(220, 38, 38)', // red-600
+                                        borderColor: 'rgb(220, 38, 38)',
                                         borderWidth: 1,
                                         borderDash: [6, 6],
                                         label: {
                                             content: 'Max: ' + formatCurrency(maxValue),
                                             enabled: true,
                                             position: 'start',
-                                            backgroundColor: 'rgba(220, 38, 38, 0.8)'
+                                            backgroundColor: 'rgba(22, 163, 74, 0.8)'
                                         }
                                     },
                                     minLine: {
                                         type: 'line',
                                         yMin: minValue,
                                         yMax: minValue,
-                                        borderColor: 'rgb(22, 163, 74)', // green-600
                                         borderWidth: 1,
                                         borderDash: [6, 6],
                                         label: {
                                             content: 'Min: ' + formatCurrency(minValue),
-                                            enabled: true,
-                                            position: 'start',
-                                            backgroundColor: 'rgba(22, 163, 74, 0.8)'
+                                            display: true,
+                                            position: 'end',
+                                            backgroundColor: 'rgba(220, 38, 38, 0.8)'
                                         }
                                     }
                                 }
