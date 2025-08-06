@@ -1068,8 +1068,8 @@
                 
                 const minValue = Math.min(...dataPoints);
                 const maxValue = Math.max(...dataPoints);
-                const yAxisMax = maxValue * 1.05;
-				const yAxisMin = minValue * 0.95;
+                const yAxisMax = maxValue * 1.04;
+				const yAxisMin = minValue - (yAxisMax - maxValue);
 
                 performanceChart = new Chart(ctx, {
                     type: 'line',
@@ -1156,7 +1156,7 @@
                                         borderWidth: 1,
                                         borderDash: [6, 6],
                                         label: {
-											yAdjust: -10,
+											yAdjust: -8,
                                             content: 'High: ' + formatCurrency(maxValue),
                                             display: true,
                                             position: 'start',
@@ -1174,7 +1174,7 @@
                                         borderWidth: 1,
                                         borderDash: [6, 6],
                                         label: {
-											yAdjust: 15,
+											yAdjust: 12,
                                             content: 'Low: ' + formatCurrency(minValue),
                                             display: true,
                                             position: 'start',
