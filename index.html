@@ -1074,7 +1074,9 @@
                 const maxValue = Math.max(...dataPoints);
                 const yAxisMax = maxValue * 1;
 				const yAxisMin = minValue - (yAxisMax - maxValue);
-
+				const minDataPoint = chartData.find(d => d.closingValue === minValue);
+				const minDateLabel = minDataPoint ? formatDateForDisplay(minDataPoint.date) : null;
+				
                 performanceChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -1152,41 +1154,24 @@
                             },
                             annotation: {
                                 annotations: {
-                                    maxLine: {
-                                        type: 'line',
-                                        yMin: maxValue,
-                                        yMax: maxValue,
-                                        borderColor: 'orange',
-                                        borderWidth: 1,
-                                        borderDash: [6, 6],
-                                        label: {
-											yAdjust: -8,
-                                            content: 'High: ' + formatCurrency(maxValue),
-                                            display: true,
-                                            position: 'start',
-											font: {weight:'500', size: '10px'},
-											backgroundColor: 'transparent',
-                                            color: 'rgba(0,0,0,0.7)'
-                                        }
-                                    },
-                                    minLine: {
-                                        type: 'line',
-                                        yMin: minValue,
-                                        yMax: minValue,
+									_minTimeLine: {
+										type: 'line',
+										xMin: minDateLabel,
+										xMax: minDateLabel,
+										borderColor: 'orange',
+										borderWidth: 1.5,
+										borderDash: [6, 6],
 										
-                                        borderColor: 'orange', // green-600
-                                        borderWidth: 1,
-                                        borderDash: [6, 6],
-                                        label: {
-											yAdjust: 12,
-                                            content: 'Low: ' + formatCurrency(minValue),
-                                            display: true,
-                                            position: 'start',
+										label: {
+											
+											content: 'Low: ' + formatCurrency(minValue),
+											display: true,
+											position: '90%', xAdjust: 45,
 											font: {weight:'500', size: '10px'},
 											backgroundColor: 'transparent',
-                                            color: 'rgba(0,0,0,0.7)'
-                                        }
-                                    }
+											color: 'rgba(0,0,0,0.7)'
+										}
+									}
                                 }
                             }
                         }
