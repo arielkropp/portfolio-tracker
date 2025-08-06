@@ -64,7 +64,6 @@
                     </button>
                     <div id="settings-dropdown" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl p-6 z-10 hidden">
                         <h3 class="text-lg font-semibold mb-4">Settings</h3>
-                        <!-- API Key Management -->
                         <div class="mb-6">
                             <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-1">Tiingo API Key</label>
                             <div class="flex items-center space-x-2">
@@ -73,7 +72,6 @@
                             </div>
                             <p id="api-key-error" class="text-red-600 text-sm mt-1"></p>
                         </div>
-                        <!-- Data Management -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Manage Portfolio Data</label>
                             <div class="flex items-center space-x-2">
@@ -87,7 +85,6 @@
                             </div>
                             <p id="upload-error" class="text-red-500 text-sm mt-2"></p>
                         </div>
-                        <!-- Force Refresh Button -->
                         <div class="mt-6">
                             <button id="forceRefreshBtn" class="w-full flex justify-center items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 font-semibold">
                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -103,7 +100,64 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            <!-- Left Column: Input and Portfolio List -->
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-2xl font-semibold">Performance</h2>
+                            <p id="performance-subheader" class="text-sm text-gray-500 mt-1 break-words">Whole Portfolio</p>
+                        </div>
+                        <button id="refreshBtn" title="Refresh all stock data" class="text-gray-400 hover:text-sky-800 flex-shrink-0">
+                            <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor" stroke="currentColor" d="M12.077 19q-2.931 0-4.966-2.033q-2.034-2.034-2.034-4.964t2.034-4.966T12.077 5q1.783 0 3.339.847q1.555.847 2.507 2.365V5.5q0-.213.144-.356T18.424 5t.356.144t.143.356v3.923q0 .343-.232.576t-.576.232h-3.923q-.212 0-.356-.144t-.144-.357t.144-.356t.356-.143h3.2q-.78-1.496-2.197-2.364Q13.78 6 12.077 6q-2.5 0-4.25 1.75T6.077 12t1.75 4.25t4.25 1.75q1.787 0 3.271-.968q1.485-.969 2.202-2.573q.085-.196.274-.275q.19-.08.388-.013q.211.067.28.275t-.015.404q-.833 1.885-2.56 3.017T12.077 19" />
+                            </svg>
+                            <div id="refreshLoader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 hidden"></div>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gray-100 rounded-lg p-1 flex space-x-1 mb-4 text-xs">
+                        <button data-range="all" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">All</button>
+                        <button data-range="1y" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">1Y</button>
+                        <button data-range="3m" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">3M</button>
+                        <button data-range="1m" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">1M</button>
+                        <button data-range="custom" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">Custom</button>
+                    </div>
+
+                    <div id="custom-range-picker" class="grid grid-cols-2 gap-4 mb-4 hidden">
+                        <div>
+                            <label for="startDate" class="block text-xs font-medium text-gray-700">Start Date</label>
+                            <input type="date" id="startDate" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800">
+                        </div>
+                        <div>
+                            <label for="endDate" class="block text-xs font-medium text-gray-700">End Date</label>
+                            <input type="date" id="endDate" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                    
+                    <div id="performance-pagination-controls">
+                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500  tracking-normal">Date</th>
+                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Open</th>
+                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Close/Current</th>
+                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">DoD Change</th>
+                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">DoD Change %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="performance-table-body" class="bg-white divide-y divide-gray-200">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="lg:col-span-1 space-y-6">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h2 class="text-2xl font-semibold mb-4">Add a New Stock</h2>
@@ -145,72 +199,9 @@
                     </div>
                     <div id="history-content" class="hidden">
                          <div id="history-pagination-controls" class="flex items-center justify-between pb-4">
-                            <!-- JS-injected content -->
-                         </div>
+                            </div>
                          <div id="purchase-history-list" class="space-y-2 overflow-x-auto">
-                            <!-- Purchase history table will be injected here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Performance Table -->
-            <div class="lg:col-span-1">
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h2 class="text-2xl font-semibold">Performance</h2>
-                            <p id="performance-subheader" class="text-sm text-gray-500 mt-1 break-words">Whole Portfolio</p>
-                        </div>
-                        <button id="refreshBtn" title="Refresh all stock data" class="text-gray-400 hover:text-sky-800 flex-shrink-0">
-                            <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                <path fill="currentColor" stroke="currentColor" d="M12.077 19q-2.931 0-4.966-2.033q-2.034-2.034-2.034-4.964t2.034-4.966T12.077 5q1.783 0 3.339.847q1.555.847 2.507 2.365V5.5q0-.213.144-.356T18.424 5t.356.144t.143.356v3.923q0 .343-.232.576t-.576.232h-3.923q-.212 0-.356-.144t-.144-.357t.144-.356t.356-.143h3.2q-.78-1.496-2.197-2.364Q13.78 6 12.077 6q-2.5 0-4.25 1.75T6.077 12t1.75 4.25t4.25 1.75q1.787 0 3.271-.968q1.485-.969 2.202-2.573q.085-.196.274-.275q.19-.08.388-.013q.211.067.28.275t-.015.404q-.833 1.885-2.56 3.017T12.077 19" />
-                            </svg>
-                            <div id="refreshLoader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 hidden"></div>
-                        </button>
-                    </div>
-                    
-                    <div class="bg-gray-100 rounded-lg p-1 flex space-x-1 mb-4 text-xs">
-                        <button data-range="all" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">All</button>
-                        <button data-range="1y" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">1Y</button>
-                        <button data-range="3m" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">3M</button>
-                        <button data-range="1m" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">1M</button>
-                        <button data-range="custom" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">Custom</button>
-                    </div>
-
-                    <div id="custom-range-picker" class="grid grid-cols-2 gap-4 mb-4 hidden">
-                        <div>
-                            <label for="startDate" class="block text-xs font-medium text-gray-700">Start Date</label>
-                            <input type="date" id="startDate" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800">
-                        </div>
-                        <div>
-                            <label for="endDate" class="block text-xs font-medium text-gray-700">End Date</label>
-                            <input type="date" id="endDate" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800">
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <canvas id="performanceChart"></canvas>
-                    </div>
-                    
-                    <div id="performance-pagination-controls">
-                        <!-- JS-injected content -->
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500  tracking-normal">Date</th>
-                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Open</th>
-                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Close/Current</th>
-                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">DoD Change</th>
-                                    <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">DoD Change %</th>
-                                </tr>
-                            </thead>
-                            <tbody id="performance-table-body" class="bg-white divide-y divide-gray-200">
-                                <!-- JS-injected content -->
-                            </tbody>
-                        </table>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -940,8 +931,7 @@
                 performancePaginationControls.innerHTML = `
                     <div class="flex items-center justify-between py-3">
                         <div class="flex-1 flex justify-between sm:hidden">
-                            <!-- Mobile pagination can be added here if needed -->
-                        </div>
+                            </div>
                         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                             <div>
                                 <p class="text-sm text-gray-700">
