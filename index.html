@@ -1066,7 +1066,9 @@
                 const dataPoints = chartData.map(d => d.closingValue);
                 
                 const maxValue = Math.max(...dataPoints);
-                const yAxisMax = maxValue * 1.03; // 10% more than max value
+				const minValue = Math.min(...dataPoints);
+                const yAxisMax = maxValue * 1.03; // 3% more than max value
+				const yAxisMin = minValue * 0.97;
 
                 performanceChart = new Chart(ctx, {
                     type: 'line',
@@ -1094,6 +1096,7 @@
                             y: {
                                 beginAtZero: false,
                                 max: yAxisMax,
+								min: yAxisMin,
                                 ticks: {
                                     callback: function(value, index, values) {
                                         return formatCurrency(value);
