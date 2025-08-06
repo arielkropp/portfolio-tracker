@@ -90,6 +90,7 @@
                         <button data-range="1y" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">1Y</button>
                         <button data-range="3m" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">3M</button>
                         <button data-range="1m" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">1M</button>
+						<button data-range="1w" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">1W</button>
                         <button data-range="custom" class="range-btn w-1/5 rounded-md py-2 font-medium leading-5">Custom</button>
                     </div>
 
@@ -724,6 +725,9 @@
                     case '1m':
                         startDate.setMonth(today.getMonth() - 1);
                         break;
+					case '1w':
+						startDate.setDate(today.getDate() - 7);
+                        break;
                     case '3m':
                         startDate.setMonth(today.getMonth() - 3);
                         break;
@@ -1068,7 +1072,7 @@
                 
                 const minValue = Math.min(...dataPoints);
                 const maxValue = Math.max(...dataPoints);
-                const yAxisMax = maxValue * 1.06;
+                const yAxisMax = maxValue * 1;
 				const yAxisMin = minValue - (yAxisMax - maxValue);
 
                 performanceChart = new Chart(ctx, {
@@ -1100,9 +1104,9 @@
 								min: yAxisMin,
                                 ticks: {
                                     callback: function(value, index, ticks) {
-										if (index === 0 || index === ticks.length - 1) {
-											return '';
-										}
+										// if (index === 0 || index === ticks.length - 1) {
+										// 	return '';
+										// }
 										return formatCurrency(value);
         							},
 									maxTicksLimit: 7
