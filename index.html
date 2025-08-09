@@ -51,21 +51,27 @@
     <div class="container mx-auto p-4 md:p-8 max-w-7xl">
 
         <header class="mb-8 w-full">
-            <div class="flex flex-col sm:flex-row justify-between items-center w-full bg-white p-6 rounded-lg shadow-md">
-                <div class="flex flex-col sm:flex-row items-center">
-                    <h1 class="text-4xl font-bold text-gray-900">Portfolio Tracker</h1>
-                    <div class="bg-gray-100 rounded-lg p-1 flex space-x-1 sm:ml-5 mt-4 sm:mt-0">
-                        <button data-price="normal" class="price-btn rounded-md py-2 px-4 text-sm font-medium">Normal Prices</button>
-                        <button data-price="adjusted" class="price-btn rounded-md py-2 px-4 text-sm font-medium">Adjusted Prices</button>
-                    </div>
-                </div>
-                <div class="relative mt-4 sm:mt-0">
-                    <button id="settings-button" class="p-2 rounded-md hover:bg-gray-200">
-                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    </button>
-                </div>
+    <div class="flex flex-col sm:flex-row justify-between items-center w-full bg-white p-6 rounded-lg shadow-md">
+        <div class="flex flex-col sm:flex-row items-center">
+            <h1 class="text-4xl font-bold text-gray-900">Portfolio Tracker</h1>
+            <div class="bg-gray-100 rounded-lg p-1 flex space-x-1 sm:ml-5 mt-4 sm:mt-0">
+                <button data-price="normal" class="price-btn rounded-md py-2 px-4 text-sm font-medium">Normal Prices</button>
+                <button data-price="adjusted" class="price-btn rounded-md py-2 px-4 text-sm font-medium">Adjusted Prices</button>
             </div>
-        </header>
+        </div>
+        <div class="relative mt-4 sm:mt-0 flex items-center space-x-2">
+            <button id="refreshBtn" title="Refresh all stock data" class="text-gray-400 hover:text-sky-800 flex-shrink-0">
+                <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="currentColor" stroke="currentColor" d="M12.077 19q-2.931 0-4.966-2.033q-2.034-2.034-2.034-4.964t2.034-4.966T12.077 5q1.783 0 3.339.847q1.555.847 2.507 2.365V5.5q0-.213.144-.356T18.424 5t.356.144t.143.356v3.923q0 .343-.232.576t-.576.232h-3.923q-.212 0-.356-.144t-.144-.357t.144-.356t.356-.143h3.2q-.78-1.496-2.197-2.364Q13.78 6 12.077 6q-2.5 0-4.25 1.75T6.077 12t1.75 4.25t4.25 1.75q1.787 0 3.271-.968q1.485-.969 2.202-2.573q.085-.196.274-.275q.19-.08.388-.013q.211.067.28.275t-.015.404q-.833 1.885-2.56 3.017T12.077 19" />
+                </svg>
+                <div id="refreshLoader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 hidden"></div>
+            </button>
+            <button id="settings-button" class="p-2 rounded-md hover:bg-gray-200">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-.426-1.756-2.924-1.756 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+        </div>
+    </div>
+</header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
