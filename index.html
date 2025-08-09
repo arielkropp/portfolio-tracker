@@ -32,14 +32,14 @@
             border-color: #0c4a6e; /* sky-800 */
         }
         /* Tab styles for segmented control */
-        .tab-btn, .range-btn, .price-btn {
+        .tab-btn, .range-btn {
             color: #374151; /* gray-700 */
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
         }
-        .tab-btn:hover, .range-btn:hover, .price-btn:hover {
+        .tab-btn:hover, .range-btn:hover {
             background-color: #e5e7eb; /* gray-200 */
         }
-        .tab-btn.active, .range-btn.active, .price-btn.active {
+        .tab-btn.active, .range-btn.active {
             background-color: #ffffff;
             color: #1f2937; /* gray-800 */
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -51,44 +51,36 @@
     <div class="container mx-auto p-4 md:p-8 max-w-7xl">
 
         <header class="mb-8 w-full">
-    <div class="flex flex-col sm:flex-row justify-between items-center w-full bg-white p-6 rounded-lg shadow-md">
-        <div class="flex flex-col sm:flex-row items-center">
-            <h1 class="text-4xl font-bold text-gray-900">Portfolio Tracker</h1>
-            <div class="bg-gray-100 rounded-lg p-1 flex space-x-1 sm:ml-5 mt-4 sm:mt-0">
-                <button data-price="normal" class="price-btn rounded-md py-2 px-4 text-sm font-medium">Normal Prices</button>
-                <button data-price="adjusted" class="price-btn rounded-md py-2 px-4 text-sm font-medium">Adjusted Prices</button>
+            <div class="flex flex-col sm:flex-row justify-between items-center w-full bg-white p-6 rounded-lg shadow-md">
+                <div class="flex flex-col sm:flex-row items-center">
+                    <h1 class="text-4xl font-bold text-gray-900">Portfolio Tracker</h1>
+                </div>
+                <div class="relative mt-4 sm:mt-0 flex items-center space-x-2">
+                    <button id="refreshBtn" title="Refresh all stock data" class="text-gray-400 hover:text-sky-800 flex-shrink-0">
+                        <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor" stroke="currentColor" d="M12.077 19q-2.931 0-4.966-2.033q-2.034-2.034-2.034-4.964t2.034-4.966T12.077 5q1.783 0 3.339.847q1.555.847 2.507 2.365V5.5q0-.213.144-.356T18.424 5t.356.144t.143.356v3.923q0 .343-.232.576t-.576.232h-3.923q-.212 0-.356-.144t-.144-.357t.144-.356t.356-.143h3.2q-.78-1.496-2.197-2.364Q13.78 6 12.077 6q-2.5 0-4.25 1.75T6.077 12t1.75 4.25t4.25 1.75q1.787 0 3.271-.968q1.485-.969 2.202-2.573q.085-.196.274-.275q.19-.08.388-.013q.211.067.28.275t-.015.404q-.833 1.885-2.56 3.017T12.077 19" />
+                        </svg>
+                        <div id="refreshLoader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 hidden"></div>
+                    </button>
+                    <button id="settings-button" class="p-2 rounded-md hover:bg-gray-200">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-.426-1.756-2.924-1.756 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
+                </div>
             </div>
-        </div>
-        <div class="relative mt-4 sm:mt-0 flex items-center space-x-2">
-            <button id="refreshBtn" title="Refresh all stock data" class="text-gray-400 hover:text-sky-800 flex-shrink-0">
-                <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                    <path fill="currentColor" stroke="currentColor" d="M12.077 19q-2.931 0-4.966-2.033q-2.034-2.034-2.034-4.964t2.034-4.966T12.077 5q1.783 0 3.339.847q1.555.847 2.507 2.365V5.5q0-.213.144-.356T18.424 5t.356.144t.143.356v3.923q0 .343-.232.576t-.576.232h-3.923q-.212 0-.356-.144t-.144-.357t.144-.356t.356-.143h3.2q-.78-1.496-2.197-2.364Q13.78 6 12.077 6q-2.5 0-4.25 1.75T6.077 12t1.75 4.25t4.25 1.75q1.787 0 3.271-.968q1.485-.969 2.202-2.573q.085-.196.274-.275q.19-.08.388-.013q.211.067.28.275t-.015.404q-.833 1.885-2.56 3.017T12.077 19" />
-                </svg>
-                <div id="refreshLoader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 hidden"></div>
-            </button>
-            <button id="settings-button" class="p-2 rounded-md hover:bg-gray-200">
-                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-.426-1.756-2.924-1.756 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            </button>
-        </div>
-    </div>
-</header>
+        </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            <!-- Right Column: Performance Table -->
             <div class="lg:col-span-1">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <h2 class="text-2xl font-semibold">Performance</h2>
+                            <div class="flex items-center gap-4">
+                                <h2 class="text-2xl font-semibold">Performance</h2>
+                                <span id="portfolio-gain-loss" class="text-lg"></span>
+                           </div>
                             <p id="performance-subheader" class="text-sm text-gray-500 mt-1 break-words">Whole Portfolio</p>
                         </div>
-                        <button id="refreshBtn" title="Refresh all stock data" class="text-gray-400 hover:text-sky-800 flex-shrink-0">
-                            <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                <path fill="currentColor" stroke="currentColor" d="M12.077 19q-2.931 0-4.966-2.033q-2.034-2.034-2.034-4.964t2.034-4.966T12.077 5q1.783 0 3.339.847q1.555.847 2.507 2.365V5.5q0-.213.144-.356T18.424 5t.356.144t.143.356v3.923q0 .343-.232.576t-.576.232h-3.923q-.212 0-.356-.144t-.144-.357t.144-.356t.356-.143h3.2q-.78-1.496-2.197-2.364Q13.78 6 12.077 6q-2.5 0-4.25 1.75T6.077 12t1.75 4.25t4.25 1.75q1.787 0 3.271-.968q1.485-.969 2.202-2.573q.085-.196.274-.275q.19-.08.388-.013q.211.067.28.275t-.015.404q-.833 1.885-2.56 3.017T12.077 19" />
-                            </svg>
-                            <div id="refreshLoader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 hidden"></div>
-                        </button>
                     </div>
                     
                     <div class="bg-gray-100 rounded-lg p-1 flex space-x-1 mb-4 text-xs">
@@ -116,8 +108,7 @@
                     </div>
                     
                     <div id="performance-pagination-controls">
-                        <!-- JS-injected content -->
-                    </div>
+                        </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -130,14 +121,12 @@
                                 </tr>
                             </thead>
                             <tbody id="performance-table-body" class="bg-white divide-y divide-gray-200">
-                                <!-- JS-injected content -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Left Column: Input and Portfolio List -->
             <div class="lg:col-span-1 space-y-6">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h2 class="text-2xl font-semibold mb-4">Add a New Stock</h2>
@@ -153,6 +142,14 @@
                         <div>
                             <label for="purchaseDate" class="block text-sm font-medium text-gray-700">Purchase Date</label>
                             <input type="date" id="purchaseDate" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-800 focus:border-sky-800 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="purchasePrice" class="block text-sm font-medium text-gray-700">$ / Share</label>
+                            <input type="number" id="purchasePrice" placeholder="If left blank, price taken from API" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-800 focus:border-sky-800 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="purchaseCostILS" class="block text-sm font-medium text-gray-700">Total Cost (₪)</label>
+                            <input type="number" id="purchaseCostILS" placeholder="Optional, overrides USD price" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-800 focus:border-sky-800 sm:text-sm">
                         </div>
                     </div>
                     <button id="addStockBtn" class="mt-6 w-full bg-sky-800 text-white py-2 px-4 rounded-md hover:bg-sky-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 font-semibold flex items-center justify-center">
@@ -179,11 +176,9 @@
                     </div>
                     <div id="history-content" class="hidden">
                          <div id="history-pagination-controls" class="flex items-center justify-between pb-4">
-                            <!-- JS-injected content -->
-                         </div>
+                            </div>
                          <div id="purchase-history-list" class="space-y-2 overflow-x-auto">
-                            <!-- Purchase history table will be injected here -->
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -191,12 +186,10 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
     <div id="settings-modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
         <div id="settings-modal" class="bg-white rounded-lg shadow-xl p-6 relative w-full max-w-md">
             <button id="close-settings-btn" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-3xl leading-none font-semibold">&times;</button>
             <h3 class="text-lg font-semibold mb-4">Settings</h3>
-            <!-- API Key Management -->
             <div class="mb-6">
                 <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-1">Tiingo API Key</label>
                 <div class="flex items-center space-x-2">
@@ -206,7 +199,16 @@
                 <p id="api-key-error" class="text-red-600 text-sm mt-1"></p>
                 <p id="api-key-success" class="text-green-600 text-sm mt-1 hidden"></p>
             </div>
-            <!-- Data Management -->
+
+            <div class="mb-6">
+                <label for="exchangeRateInput" class="block text-sm font-medium text-gray-700 mb-1">USD to ILS Exchange Rate</label>
+                <div class="flex items-center space-x-2">
+                    <input type="number" id="exchangeRateInput" placeholder="e.g., 3.7" step="0.01" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-800 focus:border-sky-800 sm:text-sm text-gray-900">
+                    <button id="saveExchangeRateBtn" class="bg-sky-800 text-white font-semibold py-2 px-3 rounded-md hover:bg-sky-900">Save</button>
+                </div>
+                <p id="exchange-rate-success" class="text-green-600 text-sm mt-1 hidden"></p>
+            </div>
+
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Manage Portfolio Data</label>
                 <div class="flex items-center space-x-2">
@@ -220,7 +222,6 @@
                 </div>
                 <p id="upload-error" class="text-red-500 text-sm mt-2"></p>
             </div>
-            <!-- Force Refresh Button -->
             <div class="mt-6">
                 <button id="forceRefreshBtn" class="w-full flex justify-center items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 font-semibold">
                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -238,6 +239,7 @@
             // --- CONFIGURATION ---
             const PORTFOLIO_STORAGE_KEY = 'stockPortfolio';
             const API_KEY_STORAGE_KEY = 'tiingoApiKey';
+            const EXCHANGE_RATE_STORAGE_KEY = 'usdIlsExchangeRate'; // --- NEW FEATURE ---
             const ROWS_PER_PAGE = 10;
             
             // --- SET CHART.JS DEFAULTS ---
@@ -245,19 +247,21 @@
 
             // --- STATE MANAGEMENT ---
             let apiKey = '';
-            let portfolio = []; 
+            let portfolio = [];
+            let exchangeRate = 3.7; // --- NEW FEATURE --- : Default exchange rate
             let selectedTickers = [];
             let fullSummaryData = [];
             let performanceCurrentPage = 0;
             let historyCurrentPage = 0;
             let performanceChart = null;
-            let activeDateRange = 'all'; // Default range set to 'all'
-            let activePriceType = 'normal'; // Default price type is now normal
+            let activeDateRange = 'all'; 
 
             // --- DOM ELEMENTS ---
             const tickerInput = document.getElementById('ticker');
             const sharesInput = document.getElementById('shares');
             const purchaseDateInput = document.getElementById('purchaseDate');
+            const purchasePriceInput = document.getElementById('purchasePrice');
+            const purchaseCostILSInput = document.getElementById('purchaseCostILS'); // --- NEW FEATURE ---
             const addStockBtn = document.getElementById('addStockBtn');
             const addStockBtnText = document.getElementById('addStockBtnText');
             const addStockLoader = document.getElementById('addStockLoader');
@@ -284,6 +288,10 @@
             const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
             const apiKeyError = document.getElementById('api-key-error');
             const apiKeySuccess = document.getElementById('api-key-success');
+            // --- NEW FEATURE --- : Exchange rate UI elements
+            const exchangeRateInput = document.getElementById('exchangeRateInput');
+            const saveExchangeRateBtn = document.getElementById('saveExchangeRateBtn');
+            const exchangeRateSuccess = document.getElementById('exchange-rate-success');
             // Download/Upload UI Elements
             const downloadBtn = document.getElementById('downloadBtn');
             const uploadBtn = document.getElementById('uploadBtn');
@@ -296,21 +304,18 @@
             const customRangePicker = document.getElementById('custom-range-picker');
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
-            // Price Type Elements
-            const priceButtons = document.querySelectorAll('.price-btn');
-
 
             // --- INITIALIZATION ---
             async function initialize() {
                 purchaseDateInput.value = new Date().toISOString().split('T')[0];
                 loadApiKeyFromStorage();
-                setupApiKeyUI();
+                loadExchangeRateFromStorage(); // --- NEW FEATURE ---
+                setupSettingsUI(); // --- NEW FEATURE --- (replaces setupApiKeyUI)
                 await loadPortfolioFromStorage();
                 renderAllPortfolioViews();
                 updatePortfolioSummary();
                 setActiveTab('summary');
                 setActiveDateRange(activeDateRange);
-                setActivePriceType(activePriceType);
             }
             
             initialize();
@@ -319,6 +324,7 @@
             addStockBtn.addEventListener('click', handleAddStock);
             refreshBtn.addEventListener('click', handleRefreshAllData);
             saveApiKeyBtn.addEventListener('click', handleSaveApiKey);
+            saveExchangeRateBtn.addEventListener('click', handleSaveExchangeRate); // --- NEW FEATURE ---
             
             // Settings Modal Listeners
             settingsButton.addEventListener('click', () => {
@@ -342,12 +348,6 @@
             rangeButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     setActiveDateRange(button.dataset.range);
-                    updatePortfolioSummary();
-                });
-            });
-            priceButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    setActivePriceType(button.dataset.price);
                     updatePortfolioSummary();
                 });
             });
@@ -387,17 +387,6 @@
                 performanceCurrentPage = 0;
             }
 
-            function setActivePriceType(priceType) {
-                activePriceType = priceType;
-                priceButtons.forEach(btn => {
-                    if (btn.dataset.price === priceType) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
-
             // --- DATA IMPORT/EXPORT ---
             async function handleDownloadData() {
                 if (portfolio.length === 0) {
@@ -405,7 +394,13 @@
                     return;
                 }
 
-                const dataStr = JSON.stringify(portfolio, null, 2);
+                // --- NEW FEATURE --- : Create a backup object with portfolio and exchange rate
+                const backupData = {
+                    portfolio: portfolio,
+                    exchangeRate: exchangeRate
+                };
+
+                const dataStr = JSON.stringify(backupData, null, 2);
                 const dataBlob = new Blob([dataStr], {type: "application/json"});
                 const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
@@ -423,11 +418,34 @@
                 reader.onload = async (e) => {
                     try {
                         const uploadedData = JSON.parse(e.target.result);
-                        if (!Array.isArray(uploadedData) || (uploadedData.length > 0 && (!uploadedData[0].ticker || !uploadedData[0].shares || !uploadedData[0].purchaseDate))) {
+                        
+                        // --- NEW FEATURE --- : Handle new and old backup formats
+                        let uploadedPortfolio;
+                        if (Array.isArray(uploadedData)) { // Old format
+                            uploadedPortfolio = uploadedData;
+                        } else if (uploadedData.portfolio && Array.isArray(uploadedData.portfolio)) { // New format
+                            uploadedPortfolio = uploadedData.portfolio;
+                            if (uploadedData.exchangeRate) {
+                                exchangeRate = parseFloat(uploadedData.exchangeRate);
+                                localStorage.setItem(EXCHANGE_RATE_STORAGE_KEY, exchangeRate);
+                                setupSettingsUI();
+                            }
+                        } else {
+                           throw new Error('Invalid file format.');
+                        }
+
+                        if (uploadedPortfolio.length > 0 && (!uploadedPortfolio[0].ticker || !uploadedPortfolio[0].shares || !uploadedPortfolio[0].purchaseDate)) {
                            throw new Error('Invalid file format.');
                         }
                         
-                        portfolio = uploadedData;
+                        for (const purchase of uploadedPortfolio) {
+                            if (!purchase.id) purchase.id = crypto.randomUUID();
+                            if (purchase.originalPurchasePrice === undefined && purchase.historicalData) {
+                                purchase.originalPurchasePrice = getPriceOnDate(purchase.historicalData, purchase.purchaseDate);
+                            }
+                        }
+
+                        portfolio = uploadedPortfolio;
                         selectedTickers = [];
                         await savePortfolioToStorage();
                         renderAllPortfolioViews();
@@ -443,7 +461,7 @@
             }
 
 
-            // --- API KEY MANAGEMENT ---
+            // --- API KEY & SETTINGS MANAGEMENT ---
             function handleSaveApiKey() {
                 const key = apiKeyInput.value.trim();
                 apiKeyError.textContent = '';
@@ -456,24 +474,54 @@
                 apiKey = key;
                 localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
 
-                // Show success message
                 apiKeySuccess.textContent = 'API key saved!';
                 apiKeySuccess.classList.remove('hidden');
 
-                // Hide message after a delay
                 setTimeout(() => {
                     apiKeySuccess.classList.add('hidden');
                 }, 2000);
             }
             
+            // --- NEW FEATURE ---
+            function handleSaveExchangeRate() {
+                const rate = parseFloat(exchangeRateInput.value);
+                if (isNaN(rate) || rate <= 0) {
+                    alert('Please enter a valid, positive exchange rate.');
+                    return;
+                }
+                exchangeRate = rate;
+                localStorage.setItem(EXCHANGE_RATE_STORAGE_KEY, exchangeRate);
+                
+                exchangeRateSuccess.textContent = 'Exchange rate saved!';
+                exchangeRateSuccess.classList.remove('hidden');
+                setTimeout(() => {
+                    exchangeRateSuccess.classList.add('hidden');
+                }, 2000);
+
+                renderAllPortfolioViews();
+                updatePortfolioSummary();
+            }
+
             function loadApiKeyFromStorage() {
                 const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
                 if (savedKey) { apiKey = savedKey; }
             }
             
-            function setupApiKeyUI() {
+            // --- NEW FEATURE ---
+            function loadExchangeRateFromStorage() {
+                const savedRate = localStorage.getItem(EXCHANGE_RATE_STORAGE_KEY);
+                if (savedRate) {
+                    exchangeRate = parseFloat(savedRate);
+                }
+            }
+
+            // --- NEW FEATURE --- (Replaces setupApiKeyUI)
+            function setupSettingsUI() {
                 if(apiKey) {
                     apiKeyInput.value = apiKey;
+                }
+                if(exchangeRate) {
+                    exchangeRateInput.value = exchangeRate;
                 }
             }
 
@@ -494,6 +542,9 @@
                     const parsedData = JSON.parse(savedData);
                     for(const purchase of parsedData) {
                          if (!purchase.id) purchase.id = crypto.randomUUID();
+                         if (purchase.originalPurchasePrice === undefined && purchase.historicalData) {
+                            purchase.originalPurchasePrice = getPriceOnDate(purchase.historicalData, purchase.purchaseDate);
+                         }
                     }
                     portfolio = parsedData;
                 }
@@ -505,6 +556,9 @@
                 const ticker = tickerInput.value.trim().toUpperCase();
                 const shares = parseFloat(sharesInput.value);
                 const purchaseDate = purchaseDateInput.value;
+                const manualPrice = parseFloat(purchasePriceInput.value);
+                const purchaseCostILS = parseFloat(purchaseCostILSInput.value); // --- NEW FEATURE ---
+
                 if (!validateInput(ticker, shares, purchaseDate)) return;
 
                 toggleLoading('add', true);
@@ -512,19 +566,24 @@
                     const existingStock = portfolio.find(s => s.ticker === ticker);
                     let historicalData;
                     
-                    if (existingStock) {
+                    if (existingStock && existingStock.historicalData) {
                         historicalData = existingStock.historicalData;
                     } else {
                         const today = new Date().toISOString().split('T')[0];
                         historicalData = await fetchHistoricalData(ticker, { startDate: purchaseDate, endDate: today });
                     }
                     
+                    const originalPurchasePrice = getPriceOnDate(historicalData, purchaseDate);
+
                     const newPurchase = { 
                         id: crypto.randomUUID(),
                         ticker, 
                         shares, 
                         purchaseDate, 
-                        historicalData 
+                        historicalData,
+                        originalPurchasePrice: originalPurchasePrice,
+                        manualPurchasePrice: isNaN(manualPrice) || manualPrice <= 0 ? null : manualPrice,
+                        purchaseCostILS: isNaN(purchaseCostILS) || purchaseCostILS <= 0 ? null : purchaseCostILS // --- NEW FEATURE ---
                     };
                     portfolio.push(newPurchase);
 
@@ -533,6 +592,8 @@
                     updatePortfolioSummary();
                     tickerInput.value = '';
                     sharesInput.value = '';
+                    purchasePriceInput.value = '';
+                    purchaseCostILSInput.value = ''; // --- NEW FEATURE ---
                 } catch (error) {
                     console.error('Error adding stock:', error);
                     errorMessage.textContent = error.message;
@@ -551,7 +612,6 @@
                     const todayString = today.toISOString().split('T')[0];
 
                     const updatePromises = uniqueTickers.map(async (ticker) => {
-                        // Backfill historical data if needed
                         const purchasesForTicker = portfolio.filter(p => p.ticker === ticker);
                         const mostRecentDateStr = getMostRecentDate(purchasesForTicker[0].historicalData);
                         let startDateForHist = null;
@@ -579,12 +639,11 @@
                                 }
                             });
                         }
-
-                        // Fetch today's data with new logic
+                        
                         let todaysDataFetched = false;
                         if (isAfterMarketCloseEST()) {
                             try {
-                                const dailyData = await fetchHistoricalData(ticker, {}); // No date params fetches latest
+                                const dailyData = await fetchHistoricalData(ticker, {}); 
                                 if (dailyData && dailyData[todayString]) {
                                     portfolio.forEach(stock => {
                                         if (stock.ticker === ticker) {
@@ -614,8 +673,8 @@
                                                 "2. close": latestData.tngoLast,
                                                 "3. adjOpen": latestData.open,
                                                 "4. adjClose": latestData.tngoLast,
-                                                "5. divCash": 0, // IEX doesn't provide this
-                                                "6. splitFactor": 1 // IEX doesn't provide this
+                                                "5. divCash": 0,
+                                                "6. splitFactor": 1
                                             };
                                         }
                                     });
@@ -666,14 +725,12 @@
                 
                 const data = await response.json();
 
-                // The API returns an array for a date range, but a single object when no dates are provided.
                 const dataArray = Array.isArray(data) ? data : [data];
                 
                 if (dataArray.length === 0) {
                    return {};
                 }
 
-                // **MODIFIED** The reduce function now includes divCash and splitFactor
                 const transformedData = dataArray.reduce((acc, item) => {
                     if(item && item.date) {
                         acc[item.date.split('T')[0]] = {
@@ -702,6 +759,54 @@
                     ? portfolio.filter(stock => selectedTickers.includes(stock.ticker))
                     : portfolio;
 
+                const gainLossEl = document.getElementById('portfolio-gain-loss');
+                if (stocksToDisplay.length === 0) {
+                    gainLossEl.textContent = '';
+                } else {
+                    let totalPurchaseValue = 0;
+                    let totalCurrentValue = 0;
+                    let totalPurchaseValueILS = 0; // --- NEW FEATURE ---
+
+                    // --- NEW FEATURE --- : Calculate total purchase values in both currencies
+                    for(const purchase of stocksToDisplay) {
+                        const purchaseValueUSD = purchase.shares * getEffectivePurchasePrice(purchase);
+                        totalPurchaseValue += purchaseValueUSD;
+                        if (purchase.purchaseCostILS) {
+                            totalPurchaseValueILS += purchase.purchaseCostILS;
+                        } else {
+                            totalPurchaseValueILS += purchaseValueUSD * exchangeRate;
+                        }
+                    }
+
+                    const summaryPerTicker = stocksToDisplay.reduce((acc, purchase) => {
+                        if (!acc[purchase.ticker]) {
+                            acc[purchase.ticker] = {
+                                totalShares: 0,
+                                historicalData: purchase.historicalData,
+                            };
+                        }
+                        acc[purchase.ticker].totalShares += purchase.shares;
+                        return acc;
+                    }, {});
+
+                    for (const ticker in summaryPerTicker) {
+                        const stockInfo = summaryPerTicker[ticker];
+                        const mostRecentDate = getMostRecentDate(stockInfo.historicalData);
+                        const latestPrice = getPriceOnDate(stockInfo.historicalData, mostRecentDate);
+                        totalCurrentValue += stockInfo.totalShares * latestPrice;
+                    }
+
+                    const gainLoss = totalCurrentValue - totalPurchaseValue;
+                    const totalCurrentValueILS = totalCurrentValue * exchangeRate; // --- NEW FEATURE ---
+                    const gainLossILS = totalCurrentValueILS - totalPurchaseValueILS; // --- NEW FEATURE ---
+                    const changeColor = gainLoss >= 0 ? 'text-green-600' : 'text-red-600';
+                    const sign = gainLoss >= 0 ? '+' : '';
+                    
+                    // --- NEW FEATURE --- : Update gain/loss display
+                    gainLossEl.innerHTML = `<span class="${changeColor}">${sign}${formatCurrency(gainLoss)} (${sign}${formatShekel(gainLossILS)})</span>`;
+                }
+
+
                 if (stocksToDisplay.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">Select a stock or add one to your portfolio.</td></tr>`;
                     performancePaginationControls.innerHTML = '';
@@ -714,7 +819,6 @@
 
                 tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">Calculating...</td></tr>`;
 
-                // Determine date range for filtering
                 const today = new Date();
                 let startDate = new Date();
                 let endDate = new Date(today);
@@ -750,10 +854,9 @@
                 }
 
                 const dailyValues = [];
-                const openKey = activePriceType === 'adjusted' ? '3. adjOpen' : '1. open';
-                const closeKey = activePriceType === 'adjusted' ? '4. adjClose' : '2. close';
+                const openKey = '3. adjOpen';
+                const closeKey = '4. adjClose';
                 
-                // Loop from end date to start date to build the values array
                 for (let d = new Date(endDate); d >= startDate; d.setDate(d.getDate() - 1)) {
                     const dateString = d.toISOString().split('T')[0];
                     let dailyTotalOpen = 0, dailyTotalClose = 0, dataFoundForDay = false;
@@ -809,7 +912,7 @@
                 renderPerformancePaginationControls();
             }
             
-            function renderPaginatedHistory() {
+            window.renderPaginatedHistory = function() {
                 const sortedPortfolio = [...portfolio].sort((a,b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
                 const start = historyCurrentPage * ROWS_PER_PAGE;
                 const end = start + ROWS_PER_PAGE;
@@ -820,9 +923,8 @@
 
             function getPriceOnDate(historicalData, dateString) {
                 if (!historicalData || !dateString) return 0;
-                const closeKey = activePriceType === 'adjusted' ? '4. adjClose' : '2. close';
+                const closeKey = '4. adjClose';
                 
-                // Find the latest available date on or before the given dateString
                 const availableDates = Object.keys(historicalData).filter(d => new Date(d) <= new Date(dateString)).sort((a,b) => new Date(b) - new Date(a));
                 if (availableDates.length > 0) {
                     const dataForDate = historicalData[availableDates[0]];
@@ -832,6 +934,10 @@
                 }
                 
                 return 0;
+            }
+
+            function getEffectivePurchasePrice(purchase) {
+                return purchase.manualPurchasePrice ?? purchase.originalPurchasePrice ?? 0;
             }
             
             function getMostRecentDate(historicalData) {
@@ -849,17 +955,25 @@
                     return;
                 }
 
+                // --- NEW FEATURE --- : Modified reducer to calculate total ILS purchase value
                 const portfolioSummary = portfolio.reduce((acc, purchase) => {
                     if (!acc[purchase.ticker]) {
                         acc[purchase.ticker] = {
                             totalShares: 0,
                             totalPurchaseValue: 0,
+                            totalPurchaseValueILS: 0, 
                             historicalData: purchase.historicalData,
                         };
                     }
                     acc[purchase.ticker].totalShares += purchase.shares;
-                    const purchasePrice = getPriceOnDate(purchase.historicalData, purchase.purchaseDate);
-                    acc[purchase.ticker].totalPurchaseValue += purchase.shares * purchasePrice;
+                    const purchaseValueUSD = purchase.shares * getEffectivePurchasePrice(purchase);
+                    acc[purchase.ticker].totalPurchaseValue += purchaseValueUSD;
+                    
+                    if (purchase.purchaseCostILS) {
+                        acc[purchase.ticker].totalPurchaseValueILS += purchase.purchaseCostILS;
+                    } else {
+                        acc[purchase.ticker].totalPurchaseValueILS += purchaseValueUSD * exchangeRate;
+                    }
                     return acc;
                 }, {});
 
@@ -869,10 +983,16 @@
                     const isSelected = selectedTickers.includes(ticker);
                     const mostRecentDate = getMostRecentDate(stockInfo.historicalData);
                     const latestPrice = getPriceOnDate(stockInfo.historicalData, mostRecentDate);
+                    
                     const currentValue = stockInfo.totalShares * latestPrice;
                     const valueChange = currentValue - stockInfo.totalPurchaseValue;
                     const changeColor = valueChange >= 0 ? 'text-green-600' : 'text-red-600';
                     const sign = valueChange >= 0 ? '+' : '';
+                    
+                    // --- NEW FEATURE --- : ILS Calculations
+                    const currentValueILS = currentValue * exchangeRate;
+                    const valueChangeILS = currentValueILS - stockInfo.totalPurchaseValueILS;
+                    const signILS = valueChangeILS >= 0 ? '+' : '';
 
                     return `
                     <div class="stock-item bg-gray-50 p-2 py-1 pt-1 rounded-md border-2 border-transparent cursor-pointer transition-colors ${isSelected ? 'selected' : ''}" onclick="handleStockSelection('${ticker}')">
@@ -887,6 +1007,10 @@
                                     Current Value: ${formatCurrency(currentValue)} 
                                     <span class="${changeColor}">(${sign}${formatCurrency(valueChange)})</span>
                                 </p>
+                                <p class="text-xs text-gray-600 mt-1">
+                                    Current Value (₪): ${formatShekel(currentValueILS)} 
+                                    <span class="${changeColor}">(${signILS}${formatShekel(valueChangeILS)})</span>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -900,15 +1024,20 @@
                 }
                 
                 const tableRows = data.map(purchase => {
-                    const purchasePrice = getPriceOnDate(purchase.historicalData, purchase.purchaseDate);
+                    const purchasePrice = getEffectivePurchasePrice(purchase);
                     const totalCost = purchase.shares * purchasePrice;
                     return `
                         <tr>
-                            <td class="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">${formatDateForDisplay(purchase.purchaseDate)}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900" id="history-date-${purchase.id}">${formatDateForDisplay(purchase.purchaseDate)}</td>
                             <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500">${purchase.ticker}</td>
-                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500">${purchase.shares}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500" id="history-shares-${purchase.id}">${purchase.shares}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500 text-right" id="history-price-${purchase.id}">${formatCurrency(purchasePrice)}</td>
                             <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500 text-right">${formatCurrency(totalCost)}</td>
-                            <td class="px-2 py-2 whitespace-nowrap text-xs text-center">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500 text-right" id="history-cost-ils-${purchase.id}">${purchase.purchaseCostILS ? formatShekel(purchase.purchaseCostILS) : 'N/A'}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-center" id="history-actions-${purchase.id}">
+                                <button onclick="editPurchase('${purchase.id}')" class="text-sky-600 hover:text-sky-800 p-1 rounded-full hover:bg-sky-100">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg>
+                                </button>
                                 <button onclick="removePurchase('${purchase.id}')" class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd"></path></svg>
                                 </button>
@@ -924,8 +1053,10 @@
                                 <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500  tracking-normal">Date</th>
                                 <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500  tracking-normal">Ticker</th>
                                 <th scope="col" class="px-2 py-2 text-left text-xs font-medium text-gray-500  tracking-normal">Shares</th>
+                                <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Price / Share</th>
                                 <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Est. Cost</th>
-                                <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal"></th>
+                                <th scope="col" class="px-2 py-2 text-right text-xs font-medium text-gray-500  tracking-normal">Total Cost (₪)</th>
+                                <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-gray-500  tracking-normal">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -974,7 +1105,6 @@
                 performancePaginationControls.innerHTML = `
                     <div class="flex items-center justify-between py-3">
                         <div class="flex-1 flex justify-between sm:hidden">
-                            <!-- Mobile pagination can be added here if needed -->
                         </div>
                         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                             <div>
@@ -1072,7 +1202,7 @@
                 
                 if (fullSummaryData.length === 0) return;
 
-                const chartData = [...fullSummaryData].reverse(); // Display oldest to newest
+                const chartData = [...fullSummaryData].reverse();
                 const labels = chartData.map(d => formatDateForDisplay(d.date));
                 const dataPoints = chartData.map(d => d.closingValue);
                 
@@ -1112,9 +1242,6 @@
 								min: yAxisMin,
                                 ticks: {
                                     callback: function(value, index, ticks) {
-										// if (index === 0 || index === ticks.length - 1) {
-										// 	return '';
-										// }
 										return formatCurrency(value);
         							},
 									maxTicksLimit: 7
@@ -1145,14 +1272,14 @@
                             },
                             crosshair: {
                                 line: {
-                                    color: '#6b7280',  // gray-500
+                                    color: '#6b7280',
                                     width: 1
                                 },
                                 sync: {
                                     enabled: false
                                 },
                                 snap: {
-                                    enabled: true     // Snap crosshair to data points
+                                    enabled: true
                                 },
                                 zoom: {
                                     enabled: false
@@ -1169,7 +1296,6 @@
 										borderDash: [6, 6],
 										
 										label: {
-											
 											content: 'Low: ' + formatCurrency(minValue),
 											display: true,
 											position: '90%', xAdjust: 45,
@@ -1192,7 +1318,7 @@
                 else { selectedTickers.push(ticker); }
                 renderAllPortfolioViews();
                 updatePortfolioSummary();
-            }
+            };
 
             window.removePurchase = (id) => {
                 const purchaseToRemove = portfolio.find(p => p.id === id);
@@ -1208,22 +1334,78 @@
                 savePortfolioToStorage();
                 renderAllPortfolioViews();
                 updatePortfolioSummary();
-            }
+            };
+
+            window.editPurchase = (id) => {
+                const purchase = portfolio.find(p => p.id === id);
+                if (!purchase) return;
+
+                const dateCell = document.getElementById(`history-date-${id}`);
+                const sharesCell = document.getElementById(`history-shares-${id}`);
+                const priceCell = document.getElementById(`history-price-${id}`);
+                const costILSCell = document.getElementById(`history-cost-ils-${id}`); // --- NEW FEATURE ---
+                const actionsCell = document.getElementById(`history-actions-${id}`);
+
+                const effectivePrice = getEffectivePurchasePrice(purchase);
+
+                dateCell.innerHTML = `<input type="date" id="edit-date-${id}" value="${purchase.purchaseDate}" class="w-full bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800 p-1">`;
+                sharesCell.innerHTML = `<input type="number" id="edit-shares-${id}" value="${purchase.shares}" class="w-full bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800 p-1">`;
+                priceCell.innerHTML = `<input type="number" id="edit-price-${id}" value="${effectivePrice}" class="w-full bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800 p-1 text-right">`;
+                // --- NEW FEATURE --- : Make ILS cost editable
+                costILSCell.innerHTML = `<input type="number" id="edit-cost-ils-${id}" value="${purchase.purchaseCostILS || ''}" placeholder="Total in ₪" class="w-full bg-white border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-sky-800 focus:border-sky-800 p-1 text-right">`;
+                
+                actionsCell.innerHTML = `
+                    <button onclick="savePurchase('${id}')" class="text-green-600 hover:text-green-800 p-1 rounded-full hover:bg-green-100" title="Save">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 2a1 1 0 00-1 1v14a1 1 0 001 1h10a1 1 0 001-1V7.414a1 1 0 00-.293-.707l-4.586-4.586A1 1 0 0010.586 2H5zm4 6a1 1 0 10-2 0v4a1 1 0 102 0V8zm-2-4a1 1 0 011-1h2a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+                    </button>
+                    <button onclick="window.renderPaginatedHistory()" class="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100" title="Cancel">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </button>
+                `;
+            };
+
+            window.savePurchase = (id) => {
+                const purchase = portfolio.find(p => p.id === id);
+                if (!purchase) return;
+
+                const newDate = document.getElementById(`edit-date-${id}`).value;
+                const newShares = parseFloat(document.getElementById(`edit-shares-${id}`).value);
+                const newPrice = parseFloat(document.getElementById(`edit-price-${id}`).value);
+                const newCostILS = parseFloat(document.getElementById(`edit-cost-ils-${id}`).value); // --- NEW FEATURE ---
+
+                if (!newDate || !newShares || newShares <= 0 || !newPrice || newPrice <= 0) {
+                    alert("Invalid date, shares, or price. Please check your inputs.");
+                    return;
+                }
+
+                purchase.purchaseDate = newDate;
+                purchase.shares = newShares;
+                purchase.purchaseCostILS = isNaN(newCostILS) || newCostILS <= 0 ? null : newCostILS; // --- NEW FEATURE ---
+                
+                if (newPrice.toFixed(4) !== (purchase.originalPurchasePrice ?? 0).toFixed(4)) {
+                     purchase.manualPurchasePrice = newPrice;
+                } else {
+                    purchase.manualPurchasePrice = null;
+                }
+
+                savePortfolioToStorage();
+                renderAllPortfolioViews();
+                updatePortfolioSummary();
+            };
+
 
             // --- UTILITY FUNCTIONS ---
             function isAfterMarketCloseEST() {
                 const now = new Date();
                 const estDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-                const estDay = estDate.getDay(); // Sunday = 0, Saturday = 6
+                const estDay = estDate.getDay(); 
                 const estHour = estDate.getHours();
                 const estMinute = estDate.getMinutes();
 
-                // Market is closed on weekends
                 if (estDay === 0 || estDay === 6) {
                     return true; 
                 }
                 
-                // Check if time is 5:30 PM (17:30) or later
                 return estHour > 17 || (estHour === 17 && estMinute >= 30);
             }
 
@@ -1271,6 +1453,14 @@
                     return '$0.00';
                 }
                 return value.toLocaleString('en-US', { style: 'currency', 'currency': 'USD' });
+            }
+            
+            // --- NEW FEATURE ---
+            function formatShekel(value) {
+                if (typeof value !== 'number') {
+                    return '₪0.00';
+                }
+                return value.toLocaleString('en-IL', { style: 'currency', currency: 'ILS' });
             }
 
             function getFirstPurchaseDate() {
