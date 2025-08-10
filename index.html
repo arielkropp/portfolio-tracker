@@ -75,7 +75,7 @@
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <div class="flex items-center gap-4">
+                            <div class="flex flex-col items-center gap-0">
                                 <h2 class="text-2xl font-semibold">Performance</h2>
                                 <span id="portfolio-gain-loss" class="text-lg"></span>
                            </div>
@@ -803,7 +803,7 @@
                     const sign = gainLoss >= 0 ? '+' : '';
                     
                     // --- NEW FEATURE --- : Update gain/loss display
-                    gainLossEl.innerHTML = `<span class="${changeColor}">${sign}${formatCurrency(gainLoss)} (${sign}${formatShekel(gainLossILS)})</span>`;
+                    gainLossEl.innerHTML = `<span class="text-sm ${changeColor}">${sign}${formatCurrency(gainLoss)} (${sign}${formatShekel(gainLossILS)})</span>`;
                 }
 
 
