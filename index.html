@@ -764,9 +764,8 @@
                 } else {
                     let totalPurchaseValue = 0;
                     let totalCurrentValue = 0;
-                    let totalPurchaseValueILS = 0; // --- NEW FEATURE ---
+                    let totalPurchaseValueILS = 0;
 
-                    // --- NEW FEATURE --- : Calculate total purchase values in both currencies
                     for(const purchase of stocksToDisplay) {
                         const purchaseValueUSD = purchase.shares * getEffectivePurchasePrice(purchase);
                         totalPurchaseValue += purchaseValueUSD;
@@ -796,15 +795,13 @@
                     }
 
                     const gainLoss = totalCurrentValue - totalPurchaseValue;
-                    const totalCurrentValueILS = totalCurrentValue * exchangeRate; // --- NEW FEATURE ---
-                    const gainLossILS = totalCurrentValueILS - totalPurchaseValueILS; // --- NEW FEATURE ---
+                    const totalCurrentValueILS = totalCurrentValue * exchangeRate;
+                    const gainLossILS = totalCurrentValueILS - totalPurchaseValueILS;
                     const changeColor = gainLoss >= 0 ? 'text-green-600' : 'text-red-600';
                     const sign = gainLoss >= 0 ? '+' : '';
                     
-                    // --- NEW FEATURE --- : Update gain/loss display
                     gainLossEl.innerHTML = `<span class="text-sm ${changeColor}">${sign}${formatCurrency(gainLoss)} (${sign}${formatShekel(gainLossILS)})</span>`;
                 }
-
 
                 if (stocksToDisplay.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">Select a stock or add one to your portfolio.</td></tr>`;
@@ -822,8 +819,8 @@
                 let startDate = new Date();
                 let endDate = new Date(today);
 
-                const firstPurchaseDate = getFirstPurchaseDate();
-                if (!firstPurchaseDate) {
+                const firstPurchaseDateStr = getFirstPurchaseDate();
+                if (!firstPurchaseDateStr) {
                     fullSummaryData = [];
                     renderPaginatedPerformanceTable();
                     renderPerformanceChart();
@@ -844,7 +841,7 @@
                         startDate.setFullYear(today.getFullYear() - 1);
                         break;
                     case 'all':
-                        startDate = new Date(firstPurchaseDate);
+                        startDate = new Date(firstPurchaseDateStr + 'T00:00:00');
                         break;
                     case 'custom':
                         startDate = new Date(startDateInput.value + 'T00:00:00');
@@ -855,9 +852,15 @@
                 const dailyValues = [];
                 const openKey = '3. adjOpen';
                 const closeKey = '4. adjClose';
+                const firstPurchaseDateObj = new Date(firstPurchaseDateStr + 'T00:00:00');
                 
                 for (let d = new Date(endDate); d >= startDate; d.setDate(d.getDate() - 1)) {
-                    const dateString = d.toISOString().split('T')[0];
+                    // Safe local date formatting to avoid timezone shift bug
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const dateString = `${year}-${month}-${day}`;
+                    
                     let dailyTotalOpen = 0, dailyTotalClose = 0, dataFoundForDay = false;
 
                     for (const stock of stocksToDisplay) {
@@ -870,8 +873,15 @@
                             }
                         }
                     }
+                    
                     if (dataFoundForDay) {
                         dailyValues.push({ date: dateString, openingValue: dailyTotalOpen, closingValue: dailyTotalClose });
+                    } else if (d < firstPurchaseDateObj) {
+                        // Plot 0 for days before any stock was bought to ensure the date scale extends properly
+                        const dayOfWeek = d.getDay();
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Only weekdays
+                            dailyValues.push({ date: dateString, openingValue: 0, closingValue: 0 });
+                        }
                     }
                 }
 
@@ -954,7 +964,6 @@
                     return;
                 }
 
-                // --- NEW FEATURE --- : Modified reducer to calculate total ILS purchase value
                 const portfolioSummary = portfolio.reduce((acc, purchase) => {
                     if (!acc[purchase.ticker]) {
                         acc[purchase.ticker] = {
@@ -988,7 +997,6 @@
                     const changeColor = valueChange >= 0 ? 'text-green-600' : 'text-red-600';
                     const sign = valueChange >= 0 ? '+' : '';
                     
-                    // --- NEW FEATURE --- : ILS Calculations
                     const currentValueILS = currentValue * exchangeRate;
                     const valueChangeILS = currentValueILS - stockInfo.totalPurchaseValueILS;
                     const signILS = valueChangeILS >= 0 ? '+' : '';
@@ -1072,8 +1080,8 @@
                 }
                 tableBody.innerHTML = data.map(day => {
                     const isChangeAvailable = day.change !== null;
-                    const changeColor = isChangeAvailable && day.change >= 0 ? 'text-green-600' : 'text-red-600';
-                    const sign = isChangeAvailable && day.change >= 0 ? '+' : '';
+                    const changeColor = isChangeAvailable && day.change > 0 ? 'text-green-600' : (isChangeAvailable && day.change < 0 ? 'text-red-600' : 'text-gray-500');
+                    const sign = isChangeAvailable && day.change > 0 ? '+' : '';
                     const changeText = isChangeAvailable ? `${sign}${formatCurrency(day.change)}` : 'N/A';
                     const changePercentText = isChangeAvailable ? `${sign}${day.changePercent.toFixed(2)}%` : 'N/A';
                     const changeTextColor = isChangeAvailable ? changeColor : 'text-gray-500';
@@ -1103,10 +1111,8 @@
                 
                 performancePaginationControls.innerHTML = `
                     <div class="flex items-center justify-between py-3">
-                        <div class="flex-1 flex justify-between sm:hidden">
-                        </div>
-                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
+                        <div class="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div class="text-center sm:text-left">
                                 <p class="text-sm text-gray-700">
                                     Showing
                                     <span class="font-medium">${startItem}</span>
@@ -1117,7 +1123,7 @@
                                     results
                                 </p>
                             </div>
-                            <div>
+                            <div class="flex justify-center sm:justify-end">
                                 <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                                     <button id="perfPrevPageBtn" ${prevDisabled} class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:text-gray-300 disabled:hover:bg-white">
                                         <span class="sr-only">Previous</span>
@@ -1205,11 +1211,23 @@
                 const labels = chartData.map(d => formatDateForDisplay(d.date));
                 const dataPoints = chartData.map(d => d.closingValue);
                 
-                const minValue = Math.min(...dataPoints);
+                // Exclude the 0 baseline from minimum calculation to find the lowest *invested* value
+                const validDataPoints = chartData.filter(d => d.closingValue > 0 || d.openingValue > 0).map(d => d.closingValue);
+                const minValue = validDataPoints.length > 0 ? Math.min(...validDataPoints) : Math.min(...dataPoints);
                 const maxValue = Math.max(...dataPoints);
-                const yAxisMax = maxValue * 1;
-				const yAxisMin = minValue - (yAxisMax - maxValue);
-				const minDataPoint = chartData.find(d => d.closingValue === minValue);
+                
+                // Safe padding for Y-Axis
+                let padding = (maxValue - minValue) * 0.05;
+                if (padding === 0) padding = maxValue === 0 ? 10 : maxValue * 0.1;
+                
+                const yAxisMax = maxValue + padding;
+                let yAxisMin = minValue - padding;
+                // Clamp yAxisMin to 0 if portfolio never went below 0
+                if (Math.min(...dataPoints) >= 0 && yAxisMin < 0) {
+                    yAxisMin = 0;
+                }
+
+				const minDataPoint = chartData.find(d => d.closingValue === minValue && (d.closingValue > 0 || maxValue === 0));
 				const minDateLabel = minDataPoint ? formatDateForDisplay(minDataPoint.date) : null;
 				
                 performanceChart = new Chart(ctx, {
